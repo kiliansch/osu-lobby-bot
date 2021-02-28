@@ -59,6 +59,10 @@ class AutohostBot {
                 this._currentHost = obj.player.user.username;
             }
 
+            if (this._playerList.length + this._alreadyChosen === 1) {
+                this._playerList.shift();
+            }
+
             this._addToHostQueue(obj.player.user.username);
 
             this._announceNextHosts();
@@ -145,8 +149,9 @@ class AutohostBot {
         if (this._playerList.length > 0) {
             nextPlayer = this._playerList.shift();
 
-            // Avoid the same host twice in a row
-            if (nextPlayer == lastHost && this._playerList.length > 1) {
+            // Avoid the same host twice in a row if not alone in lobby
+            if (nextPlayer == lastHost && (this._playerList.length + this._alreadyChosen.length) > 1) {
+                this._alreadyChosen.push(nextPlayer);    
                 nextPlayer = this._playerList.shift();
             }
 
@@ -157,6 +162,11 @@ class AutohostBot {
 
         } else if (this._playerList.length == 0) {
             this._playerList = this._alreadyChosen;
+            this._alreadyChosen = [];
+
+            this._announceNextHosts();
+
+            this._rotateHost();
         }
 
         this._announceNextHosts();
@@ -186,15 +196,25 @@ class AutohostBot {
             return value !== playerName
         });
 
+        // Don't add current host if more ppl joined
+        if (playerList.length > 1) {
+            playerList = this._playerList.filter((value) => {
+                return value !== this._currentHost
+            });
+        }
+
         playerList.push(playerName);
         this._playerList = playerList;
     }
 
     _initializeHost() {
-        let hostName = this._client.users.keys().next().value;
+        let playerName = this._client.users.keys().next().value;
 
         if (this._playerList.length === 0) {
-            this._addToHostQueue(hostName)
+            this._addToHostQueue(playerName)
+            this._currentHost = playerName
+
+            this._announceNextHosts();
         }
     }
 }
