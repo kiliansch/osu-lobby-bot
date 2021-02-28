@@ -9,6 +9,7 @@
   "dependencies": {
     "bancho.js": "^0.9.7",
     "dotenv": "^8.2.0",
+    "uri-js": "^4.4.1",
     "yarn": "^1.22.10"
   },
   "scripts": {
