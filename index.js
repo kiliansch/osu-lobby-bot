@@ -19,11 +19,10 @@ class AutohostBot {
         this._beatmap = 0;
         this._lobby = null;
         this._channel = null;
-        this._password = null;
         this._client = client;
+        this._gameId = 0;
 
         this._parseOptions(process.argv.slice(2));
-        this._parseLobbyName();
 
         this._startBot();
     }
@@ -32,17 +31,17 @@ class AutohostBot {
         this._client.connect().then(async () => {
             console.log("Login successful!");
 
-            // Create new lobby
-            this._channel = await this._client.createLobby(this._lobbyName)
+            // Join multiplayer game
+            this._channel = await this._client.getChannel(`#mp_${this._gameId}`);
+            await this._channel.join();
             this._lobby = this._channel.lobby;
-        
-            this._password = Math.random().toString(36).substring(8);
+
+            this._initializeHost();
+
             await Promise.all([
-                this._lobby.setSettings(0, 0, 16),
+                this._lobby.setSettings(0, 0, 8),
                 this._lobby.setMods("Freemod", true)
             ]);
-        
-            console.log(`Lobby created! Name: ${this._lobby.name}, Password: ${this._password}`);
             console.log(`Multiplayer Link: https://osu.ppy.sh/mp/${this._lobby.id}`);
 
             this._setupListeners();
@@ -60,13 +59,17 @@ class AutohostBot {
                 this._currentHost = obj.player.user.username;
             }
 
-            this._playerList.push(obj.player.user.username)
+            this._addToHostQueue(obj.player.user.username);
 
             this._announceNextHosts();
         });    
 
         this._lobby.on("playerLeft", (obj) => {
             this._playerList = this._playerList.filter((value) => {
+                return value !== obj.user.username
+            });
+
+            this._alreadyChosen = this._alreadyChosen.filter((value) => {
                 return value !== obj.user.username
             });
     
@@ -108,8 +111,7 @@ class AutohostBot {
 
         process.on("SIGINT", async () => {
             console.log("SIGINT received. Closing lobby and exiting...")
-    
-            await this._lobby.closeLobby();
+
             this._client.disconnect();
         });
     }
@@ -121,7 +123,7 @@ class AutohostBot {
             case 2:
                 this._minStars = parseFloat(options[1])
             case 1:
-                this._lobbyName = options[0];
+                this._gameId = options[0]
                 break;
         }
     }
@@ -138,23 +140,22 @@ class AutohostBot {
 
     _rotateHost() {
         let nextPlayer;
-        let playerInfo
+        let lastHost = this._currentHost;
 
         if (this._playerList.length > 0) {
             nextPlayer = this._playerList.shift();
-        
-            playerInfo = this._lobby.getPlayerByName(nextPlayer);
 
-            console.log(playerInfo);
-
+            // Avoid the same host twice in a row
+            if (nextPlayer == lastHost && this._playerList.length > 1) {
+                nextPlayer = this._playerList.shift();
+            }
 
             this._lobby.setHost(nextPlayer);
             this._currentHost = nextPlayer;
 
             this._alreadyChosen.push(nextPlayer);
-        }
-        
-        if (this._playerList.length == 0) {
+
+        } else if (this._playerList.length == 0) {
             this._playerList = this._alreadyChosen;
         }
 
@@ -175,6 +176,26 @@ class AutohostBot {
 
     _beatmapTooHigh(beatmap) {
         return this._maxStars > 0 && beatmap.difficultyRating > this._maxStars;
+    }
+
+    _addToHostQueue(playerName) {
+        let playerList;
+
+        // make sure we have no duplicates
+        playerList = this._playerList.filter((value) => {
+            return value !== playerName
+        });
+
+        playerList.push(playerName);
+        this._playerList = playerList;
+    }
+
+    _initializeHost() {
+        let hostName = this._client.users.keys().next().value;
+
+        if (this._playerList.length === 0) {
+            this._addToHostQueue(hostName)
+        }
     }
 }
 
