@@ -44,18 +44,16 @@ class PlayerQueue {
         }
 
         this.bot.channel.sendMessage(`Skipped hosts up to ${playerName}`);
+        this._announcePlayers();
     }
 
     skipTurn(playerName, permanent = false) {
-        console.log(`Skipping turn of ${playerName}`);
         const playerObj = this.queue.find((o) => o.name === playerName);
 
         if (this.currentHost === playerName) {
-            console.log("Current host, just going next()");
             return this.next();
         }
 
-        console.log("Skipping player that's not host");
         this.queue = this.queue.filter((playerObj) => playerObj.name !== playerName);
         this.queue.push(playerObj);
 
@@ -78,14 +76,12 @@ class PlayerQueue {
      * Set next host and add it again at the end of the queue.
      */
     next() {
-        console.log("Switching player.")
         let nextPlayer = this.queue.shift();
         this.currentHost = nextPlayer.name;
 
         this.bot.channel.lobby.setHost(nextPlayer.name);
 
         this.queue.push(nextPlayer);
-        console.log("Switched player.")
 
         this._announcePlayers();
     }
@@ -118,6 +114,7 @@ class PlayerQueue {
         }
 
         console.log(`Initialized ${this.queue.length} players with ${this.currentHost} as Host.`);
+        this._announcePlayers();
     }
 
     _announcePlayers() {
