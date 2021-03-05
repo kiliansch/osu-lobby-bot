@@ -19,15 +19,15 @@ class Bot extends EventEmitter {
      */
     constructor(Client) {
         super();
-        this.minStars = 3.5;
-        this.maxStars = 4.5;
+        this.minStars = 4.0;
+        this.maxStars = 4.99;
         this.channel = null;
         this.client = Client;
-        this.gameId = 77197897;
+        this.gameId = 77296421;
+        this.allowBeatmap = false;
+        this.matchRunning = null;
 
         this.playerQueue = null;
-
-        this._parseOptions(process.argv.slice(2));
     }
 
     /**
@@ -57,7 +57,7 @@ class Bot extends EventEmitter {
             console.log("Initializing players.");
             this.playerQueue = new PlayerQueue(this);
 
-            //console.log(`Multiplayer Link: https://osu.ppy.sh/mp/${this._lobby.id}`);
+            console.log(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
         } catch (error) {
             console.error('Error starting bot', error);
         }
@@ -66,7 +66,7 @@ class Bot extends EventEmitter {
     _setupLobbyListeners() {
         // Beatmap
         this.channel.lobby.on("beatmap", async (beatmap) => {
-            listeners.lobby.beatmap.forEach((beatmapListener) => {
+            listeners.lobby.beatmap.forEach(beatmapListener => {
                 new beatmapListener(beatmap, this).listener();
             })
         });
@@ -78,6 +78,20 @@ class Bot extends EventEmitter {
         this.channel.lobby.on("playerLeft", (obj) => {
             this.playerQueue.remove(obj.user.username);
         });
+
+        this.channel.lobby.on("matchFinished", (scores) => {
+            this.matchRunning = false;
+            this.playerQueue.next();
+        });
+
+        this.channel.lobby.on("matchStarted", async () => {
+            this.matchRunning = true;
+            listeners.lobby.matchStarted.forEach(matchStartedListener => {
+                if (matchStartedListener.name === "RestrictedBeatmapListener") {
+                    new matchStartedListener(this.channel.lobby.beatmap, this, true).listener();
+                }
+            });
+        });
     }
 
     _setupClientListeners() {
@@ -88,10 +102,17 @@ class Bot extends EventEmitter {
             }
 
             // Skip to given user name
-            const r = /^(\!skipTo) (.+)$/i
+            let r = /^(\!skipTo) (.+)$/i
             if (r.test(message.message)) {
                 const m = r.exec(message.message);
                 this.playerQueue.skipTo(m[2]);
+            }
+
+            r = /^\!allow$/i
+            if (r.test(message.message)) {
+                const m = r.exec(message.message);
+                this.allowBeatmap = true;
+                this.channel.sendMessage("Beatmap restriction overriden for the next map by match owner.");
             }
         });
 
@@ -101,38 +122,6 @@ class Bot extends EventEmitter {
                 this.playerQueue.skipTurn(message.user.username);
             }
         });
-    }
-
-        /**
-     * Parse option array
-     * @param {array} options 
-     */
-    _parseOptions(options) {
-        switch (options.length) {
-            case 3:
-                this._maxStars = parseFloat(options[2])
-            case 2:
-                this._minStars = parseFloat(options[1])
-            case 1:
-                this._gameId = options[0]
-                break;
-        }
-    }
-
-    /**
-     * Initialize players present in the game. Set host if only one player is present.
-     * Will reset host to the first player present.
-     */
-    _initializePlayers() {
-        console.log(this.channel.lobby.players);
-
-        // Key = BanchoUser
-        // console.log('KEY');
-        // this.client.users.forEach((key, value, map) => {
-        //     console.log(key);
-        // });
-
-        // Value = username
     }
 }
 

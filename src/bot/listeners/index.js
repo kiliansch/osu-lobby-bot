@@ -10,7 +10,9 @@ const listeners = {
         ],
         matchFinished: [],
         matchAborted: [],
-        matchStarted: [],
+        matchStarted: [
+            RestrictedBeatmapListener
+        ],
         playerJoined: [],
         playerLeft: []
     }

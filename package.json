@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "dependencies": {
-    "bancho.js": "^0.9.7",
+    "bancho.js": "https://github.com/kiliansch/bancho.js",
     "dotenv": "^8.2.0",
     "osu-sr-calculator": "^1.0.13",
     "uri-js": "^4.4.1",
