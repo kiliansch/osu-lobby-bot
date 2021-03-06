@@ -816,9 +816,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
 
-"bancho.js@https://github.com/kiliansch/bancho.js":
-  version "0.10.0-beta.3"
-  resolved "https://github.com/kiliansch/bancho.js#defdcfc234ca4d5bf3ce27c3139bd98488c4bd71"
+bancho.js@^0.9.7:
+  version "0.9.7"
+  resolved "https://registry.yarnpkg.com/bancho.js/-/bancho.js-0.9.7.tgz#0fc87c897aced6da3aa71bf41221d2173ed5d287"
+  integrity sha512-0W08wnmzWWg+Pyqi2RSrPFrrYJcj8zZNRnrTSUZunxnQOXRQavx9bdZXEe6uF4l3WShzoo8aeYjrZrgZnvdcHg==
   dependencies:
     nodesu "^0.7.2"
 
@@ -3977,7 +3978,7 @@ update-notifier@^0.6.0:
     latest-version "^2.0.0"
     semver-diff "^2.0.0"
 
-uri-js@^4.2.2, uri-js@^4.4.1:
+uri-js@^4.2.2:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/uri-js/-/uri-js-4.4.1.tgz#9b1a52595225859e55f669d928f88c6c57f2a77e"
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==

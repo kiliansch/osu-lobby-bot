@@ -1,4 +1,4 @@
-const RestrictedBeatmapListener = require('./lobby/beatmap/restricted')
+const RestrictedBeatmapListener = require('./lobby/beatmap/restrictedBeatmap')
 
 const listeners = {
     client: {
