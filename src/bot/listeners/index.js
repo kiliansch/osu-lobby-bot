@@ -1,25 +1,25 @@
-const RestrictedBeatmapListener = require('./lobby/beatmap/restrictedBeatmap')
-const NoManualHostPassListener = require('./lobby/host/noManualHostPass')
+const RestrictedBeatmapListener = require('./lobby/beatmap/restrictedBeatmap');
+const NoManualHostPassListener = require('./lobby/host/noManualHostPass');
 
 const listeners = {
     client: {
-        CM: {}
+        CM: {},
     },
     lobby: {
         beatmap: [
-            RestrictedBeatmapListener
+            RestrictedBeatmapListener,
         ],
         matchFinished: [],
         matchAborted: [],
         matchStarted: [
-            RestrictedBeatmapListener
+            RestrictedBeatmapListener,
         ],
         playerJoined: [],
         playerLeft: [],
         host: [
-            NoManualHostPassListener
-        ]
-    }
+            NoManualHostPassListener,
+        ],
+    },
 };
 
 module.exports = listeners;

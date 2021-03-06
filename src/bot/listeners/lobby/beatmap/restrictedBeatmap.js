@@ -1,6 +1,5 @@
-const { EventEmitter } = require("events").EventEmitter;
-const Regexes = require("bancho.js/lib/Multiplayer/BanchoLobbyRegexes")
-const starRating = require("osu-sr-calculator");
+const Regexes = require('bancho.js/lib/Multiplayer/BanchoLobbyRegexes');
+const starRating = require('osu-sr-calculator');
 
 /**
  * Restricted Beatmap listener
@@ -17,29 +16,29 @@ class RestrictedBeatmapListener {
     }
 
     async listener() {
-        if (this.beatmap == null || !this._beatmapDifficultyRestricted()) {
+        if (this.beatmap == null || !this.beatmapDifficultyRestricted()) {
             return;
         }
 
-        await this._checkForDoubleTime();
+        await this.checkForDoubleTime();
 
-        const tooLow = await this._beatmapTooLow();
-        if (tooLow == true && !this.bot.allowBeatmap) {
+        const tooLow = await this.beatmapTooLow();
+        if (tooLow === true && !this.bot.allowBeatmap) {
             // Beatmap too high.
             let message = `${this.bot.playerQueue.currentHost} this beatmap is too low, minimum stars are ${this.bot.minStars}. `;
             if (!this.matchStarted) {
-                message += "If you start with these settings, match will be aborted and host will be passed to the next in line.";
+                message += 'If you start with these settings, match will be aborted and host will be passed to the next in line.';
             }
 
             this.bot.channel.sendMessage(message);
         }
 
-        const tooHigh = await this._beatmapTooHigh();
-        if (tooHigh == true && !this.bot.allowBeatmap) {
+        const tooHigh = await this.beatmapTooHigh();
+        if (tooHigh === true && !this.bot.allowBeatmap) {
             // Beatmap too high.
             let message = `${this.bot.playerQueue.currentHost} this beatmap is too high, maximum stars are ${this.bot.maxStars}. `;
             if (!this.matchStarted) {
-                message += "If you start with these settings, match will be aborted and host will be passed to the next in line.";
+                message += 'If you start with these settings, match will be aborted and host will be passed to the next in line.';
             }
 
             this.bot.channel.sendMessage(message);
@@ -51,38 +50,37 @@ class RestrictedBeatmapListener {
                 return;
             }
 
-            this.bot.channel.sendMessage(`${this.bot.playerQueue.currentHost} you have been warned.`)
+            this.bot.channel.sendMessage(`${this.bot.playerQueue.currentHost} you have been warned.`);
             this.bot.channel.lobby.abortMatch();
             this.bot.playerQueue.next();
         }
-
     }
 
     /**
-     * 
+     *
      * @returns {Promise<null>}
      */
-    _checkForDoubleTime() {
+    checkForDoubleTime() {
         return new Promise((resolve, reject) => {
-            this.bot.channel.sendMessage("!mp settings (check lobby mods)")
+            this.bot.channel.sendMessage('!mp settings (check lobby mods)')
                 .then(() => {
-                    let modsMessageListener = (message) => {
-                        if (message.user.ircUsername != "BanchoBot") {
+                    const modsMessageListener = (message) => {
+                        if (message.user.ircUsername !== 'BanchoBot') {
                             return;
                         }
 
                         const result = Regexes.regexes.activeMods(message.message);
                         if (result !== undefined) {
-                            if (this.bot.channel.lobby.mods !== null && this.bot.channel.lobby.mods.find((o) => o.shortMod === "dt") !== undefined) {
+                            if (this.bot.channel.lobby.mods !== null && this.bot.channel.lobby.mods.find((o) => o.shortMod === 'dt') !== undefined) {
                                 this.hasDT = true;
                             }
 
                             resolve();
-                            this.bot.client.removeListener("CM", modsMessageListener);
+                            this.bot.client.removeListener('CM', modsMessageListener);
                         }
                     };
 
-                    this.bot.client.on("CM", modsMessageListener);
+                    this.bot.client.on('CM', modsMessageListener);
                 })
                 .catch(reject);
         });
@@ -91,19 +89,19 @@ class RestrictedBeatmapListener {
     /**
      * Getter for beatmap difficulty restriction
      */
-    _beatmapDifficultyRestricted() {
+    beatmapDifficultyRestricted() {
         return (this.bot.minStars > 0 || this.bot.maxStars > 0);
     }
 
     /**
      * Check for beatmap difficulty too low
      */
-    async _beatmapTooLow() {
+    async beatmapTooLow() {
         let difficulty = this.beatmap.difficultyRating;
 
         if (this.hasDT) {
             try {
-                const result = await starRating.calculateStarRating(this.beatmap.id, ["DT"]);
+                const result = await starRating.calculateStarRating(this.beatmap.id, ['DT']);
                 difficulty = result.DT;
             } catch (error) {
                 console.error(error);
@@ -116,12 +114,12 @@ class RestrictedBeatmapListener {
     /**
      * Check for beatmap difficulty too high
      */
-    async _beatmapTooHigh() {
+    async beatmapTooHigh() {
         let difficulty = this.beatmap.difficultyRating;
 
         if (this.hasDT) {
             try {
-                const result = await starRating.calculateStarRating(this.beatmap.id, ["DT"]);
+                const result = await starRating.calculateStarRating(this.beatmap.id, ['DT']);
                 difficulty = result.DT;
             } catch (error) {
                 console.error(error);
