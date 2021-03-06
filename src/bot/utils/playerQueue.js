@@ -32,7 +32,7 @@ class PlayerQueue {
                 this.rotationChange = true;
                 this.bot.channel.lobby.setHost(playerName);
                 this.currentHost = playerName;
-
+              
                 this.queue.push(upcomingHost);
                 hostFound = true;
                 break;
@@ -67,7 +67,7 @@ class PlayerQueue {
     add(playerName, lobbyPlayer) {
         this.queue.push({
             name: playerName,
-            lobbyPlayer,
+            lobbyPlayer
         });
     }
 

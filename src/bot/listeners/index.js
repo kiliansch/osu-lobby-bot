@@ -1,3 +1,4 @@
+
 const RestrictedBeatmapListener = require('./lobby/beatmap/restrictedBeatmap');
 const NoManualHostPassListener = require('./lobby/host/noManualHostPass');
 

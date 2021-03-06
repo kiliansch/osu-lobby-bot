@@ -14,9 +14,6 @@ const PlayerQueue = require('./utils/playerQueue');
  * Bot class
  */
 class Bot extends EventEmitter {
-    /**
-     * @param {Bancho.BanchoClient} Client
-     */
     constructor() {
         super();
         this.minStars = 4.0;
