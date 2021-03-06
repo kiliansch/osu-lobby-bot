@@ -44,7 +44,7 @@ class Bot extends EventEmitter {
             await this.channel.join();
 
             console.log("Updating settings.");
-            await this.channel.lobby.setSettings(0, 0, 8);
+            await this.channel.lobby.setSettings(0, 0, 10);
             await this.channel.lobby.setMods("", true);
 
             // Initialize player list
