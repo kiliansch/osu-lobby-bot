@@ -1,3 +1,6 @@
+const { BanchoBotStatsReturn } = require("bancho.js");
+const BanchoBotStatsCommand = require("bancho.js/lib/StatsCommand/BanchoBotStatsCommand");
+
 class PlayerQueue {
     constructor(bot) {
         this.queue = [];
@@ -32,7 +35,7 @@ class PlayerQueue {
                 this.rotationChange = true;
                 this.bot.channel.lobby.setHost(playerName);
                 this.currentHost = playerName;
-              
+
                 this.queue.push(upcomingHost);
                 hostFound = true;
                 break;
@@ -78,17 +81,26 @@ class PlayerQueue {
     /**
      * Set next host and add it again at the end of the queue.
      */
-    next() {
+    async next() {
         this.rotationChange = true;
         const nextPlayer = this.queue.shift();
         this.currentHost = nextPlayer.name;
-
-        this.bot.channel.lobby.setHost(nextPlayer.name);
-
         this.queue.push(nextPlayer);
 
-        this.announcePlayers();
-        this.rotationChange = false;
+        this.bot.channel.sendMessage("Performing AFK check.");
+        /**
+         * @type {BanchoBotStatsReturn}
+         */
+        const stats = await new BanchoBotStatsCommand(nextPlayer.lobbyPlayer.user).run();
+        if (stats.status === 'Afk') {
+            this.bot.channel.sendMessage(`Upcoming host named ${nextPlayer.name}s status is ${stats.status}. Skipping.`);
+            this.next();
+        } else {
+            this.bot.channel.lobby.setHost(nextPlayer.name);
+
+            this.announcePlayers();
+            this.rotationChange = false;
+        }
     }
 
     /**
