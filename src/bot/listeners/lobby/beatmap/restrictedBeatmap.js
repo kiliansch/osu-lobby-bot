@@ -116,6 +116,7 @@ class RestrictedBeatmapListener {
      */
     async beatmapTooHigh() {
         let difficulty = this.beatmap.difficultyRating;
+        let maxStars = Math.round((this.bot.maxStars + Number.EPSILON) * 10) / 10
 
         if (this.hasDT) {
             try {
@@ -126,7 +127,7 @@ class RestrictedBeatmapListener {
             }
         }
 
-        return this.bot.maxStars > 0 && difficulty > this.bot.maxStars;
+        return this.bot.maxStars > 0 && difficulty > maxStars;
     }
 }
 
