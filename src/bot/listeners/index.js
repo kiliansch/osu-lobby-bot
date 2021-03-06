@@ -1,4 +1,5 @@
 const RestrictedBeatmapListener = require('./lobby/beatmap/restrictedBeatmap')
+const NoManualHostPassListener = require('./lobby/host/noManualHostPass')
 
 const listeners = {
     client: {
@@ -14,7 +15,10 @@ const listeners = {
             RestrictedBeatmapListener
         ],
         playerJoined: [],
-        playerLeft: []
+        playerLeft: [],
+        host: [
+            NoManualHostPassListener
+        ]
     }
 };
 

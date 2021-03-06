@@ -92,6 +92,12 @@ class Bot extends EventEmitter {
                 }
             });
         });
+
+        this.channel.lobby.on("host", (currentHost) => {
+            listeners.lobby.host.forEach(hostListener => {
+                new hostListener(currentHost, this).listener();
+            });
+        });
     }
 
     _setupClientListeners() {
