@@ -7,15 +7,45 @@ class NoManualHostPassListener {
     /**
      * Thanks goes to https://github.com/Xynt for this implementation.
      */
-    listener() {
-        let correctHost = this.playerQueue.queue[0];
-        let correctNextHost = this.playerQueue.queue[1];
-
-        if (this.currentHost.user.id !== correctNextHost.lobbyPlayer.user.id) {
-            this.channel.lobby.setHost(correctHost.user.username);
-            this.channel.sendMessage(`${correctHost.user.username}, you passed host over to ${currentHost.user.username}, but he is not the next on the list.`);
-            this.channel.sendMessage(`If you want to pass on host, type !skip in chat.`);
+    async listener() {
+        // don't run if we just do normal rotation
+        if (this.bot.rotationChange == true) {
+            return;
         }
+
+        let correctNextHost = this.bot.playerQueue.queue[0];
+        if (this.bot.playerQueue.currentHost !== this.currentHost.user.username && (!this.bot.rotationChange || this.currentHost.user.username !== correctNextHost.lobbyPlayer.user.username)) {
+            // don't run this on the upcoming host change
+            this.bot.rotationChange = true;
+
+            await this._waitHostTurn(this.bot.playerQueue.currentHost);
+
+            this.bot.channel.sendMessage(`${this.bot.playerQueue.currentHost}, you passed host over to ${this.currentHost.user.username}, but it's not their turn yet.`);
+            this.bot.channel.sendMessage(`If you want to pass on your turn, type !skip in chat.`);
+        }
+    }
+
+    _waitHostTurn(playerName) {
+        return new Promise((resolve, reject) => {
+            this.bot.channel.lobby.setHost(playerName)
+                .then(() => {
+                    let hostChangeMessageListener = (message) => {
+                        if (message.user.ircUsername != "BanchoBot") {
+                            return;
+                        }
+
+                        const r = new RegExp(`^${playerName} became the host\.$`)
+                        if (r.test(message.message)) {
+                            this.bot.rotationChange = false;
+                            resolve();
+                            this.bot.client.removeListener("CM", hostChangeMessageListener);
+                        }
+                    };
+
+                    this.bot.client.on("CM", hostChangeMessageListener);
+                })
+                .catch(reject);
+        });
     }
 }
 

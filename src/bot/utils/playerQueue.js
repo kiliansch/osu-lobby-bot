@@ -3,6 +3,7 @@ class PlayerQueue {
         this.queue = [];
         this.currentHost = null;
         this.bot = bot;
+        this.rotationChange = true;
 
         this._setupPlayerQueue();
     }
@@ -28,6 +29,7 @@ class PlayerQueue {
         while (iterator <= this.queue.length) {
             upcomingHost = this.queue.shift();
             if (upcomingHost.name == playerName) {
+                this.rotationChange = true;
                 this.bot.channel.lobby.setHost(playerName);
                 this.currentHost = playerName;
                 
@@ -45,6 +47,7 @@ class PlayerQueue {
 
         this.bot.channel.sendMessage(`Skipped hosts up to ${playerName}`);
         this._announcePlayers();
+        this.rotationChange = false;
     }
 
     skipTurn(playerName, permanent = false) {
@@ -76,6 +79,7 @@ class PlayerQueue {
      * Set next host and add it again at the end of the queue.
      */
     next() {
+        this.rotationChange = true;
         let nextPlayer = this.queue.shift();
         this.currentHost = nextPlayer.name;
 
@@ -84,6 +88,7 @@ class PlayerQueue {
         this.queue.push(nextPlayer);
 
         this._announcePlayers();
+        this.rotationChange = false;
     }
 
     /**
@@ -99,8 +104,6 @@ class PlayerQueue {
      * Set up the queue
      */
     _setupPlayerQueue() {
-        let playerData;
-
         if (this.bot.channel.lobby.players.length === 0) {
             return console.error("No players found. Can't continue!");
         }
