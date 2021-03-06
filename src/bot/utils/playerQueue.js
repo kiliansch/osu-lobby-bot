@@ -106,12 +106,15 @@ class PlayerQueue {
         }
 
         for (const playerName in this.bot.channel.lobby.players) {
-            this.add(playerName, this.bot.channel.lobby.players[playerName])
-
             if (this.bot.channel.lobby.players[playerName].isHost === true) {
                 this.currentHost = playerName
+            } else {
+                this.add(playerName, this.bot.channel.lobby.players[playerName])
             }
         }
+
+        // Add host to end
+        this.add(this.currentHost, this.bot.channel.lobby.players[this.currentHost])
 
         console.log(`Initialized ${this.queue.length} players with ${this.currentHost} as Host.`);
         this._announcePlayers();
