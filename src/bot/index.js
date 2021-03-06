@@ -20,7 +20,7 @@ class Bot extends EventEmitter {
         this.maxStars = 4.99;
         this.channel = null;
         this.client = Client;
-        this.gameId = 77370104;
+        this.gameId = 77375119;
         this.allowBeatmap = false;
         this.matchRunning = null;
         this.fixedHost = false;
