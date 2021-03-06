@@ -1,5 +1,5 @@
 {
-  "name": "osu-autohost-bot",
+  "name": "osu-lobby-bot",
   "version": "0.2.1",
   "description": "",
   "main": "index.js",
@@ -18,15 +18,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kiliansch/osu-autohost-bot.git"
+    "url": "git+https://github.com/kiliansch/osu-lobby-bot.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kiliansch/osu-autohost-bot/issues"
+    "url": "https://github.com/kiliansch/osu-lobby-bot/issues"
   },
-  "homepage": "https://github.com/kiliansch/osu-autohost-bot#readme",
+  "homepage": "https://github.com/kiliansch/osu-lobby-bot#readme",
   "devDependencies": {
     "jest": "^26.6.3"
   }
