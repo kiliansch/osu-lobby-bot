@@ -1,6 +1,6 @@
 {
-  "name": "osu-autohost-bot",
-  "version": "1.0.0",
+  "name": "osu-lobby-bot",
+  "version": "0.2.1",
   "description": "",
   "main": "index.js",
   "directories": {
@@ -10,7 +10,6 @@
     "bancho.js": "https://github.com/kiliansch/bancho.js",
     "dotenv": "^8.2.0",
     "osu-sr-calculator": "^1.0.13",
-    "uri-js": "^4.4.1",
     "yargs": "^16.2.0",
     "yarn": "^1.22.10"
   },
@@ -19,16 +18,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kiliansch/osu-autohost-bot.git"
+    "url": "git+https://github.com/kiliansch/osu-lobby-bot.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kiliansch/osu-autohost-bot/issues"
+    "url": "https://github.com/kiliansch/osu-lobby-bot/issues"
   },
-  "homepage": "https://github.com/kiliansch/osu-autohost-bot#readme",
+  "homepage": "https://github.com/kiliansch/osu-lobby-bot#readme",
   "devDependencies": {
+    "eslint": "^7.21.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
     "jest": "^26.6.3"
   }
 }

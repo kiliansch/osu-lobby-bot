@@ -1,31 +1,29 @@
-const EventEmitter = require('events').EventEmitter;
+const { EventEmitter } = require('events');
+const Bancho = require('bancho.js');
 
-const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
-const argv = yargs(hideBin(process.argv)).argv
+const Client = new Bancho.BanchoClient({
+    username: process.env.OSU_USER,
+    password: process.env.OSU_PASS,
+    apiKey: process.env.API_KEY,
+});
 
-const Bancho = require('bancho.js')
-const Client = new Bancho.BanchoClient({ username: process.env.OSU_USER, password: process.env.OSU_PASS, apiKey: process.env.API_KEY });
-
-const listeners = require('./listeners')
-const PlayerQueue = require('./utils/playerQueue')
+const listeners = require('./listeners');
+const PlayerQueue = require('./utils/playerQueue');
 
 /**
  * Bot class
  */
 class Bot extends EventEmitter {
-    /**
-     * @param {Bancho.BanchoClient} Client 
-     */
-    constructor(Client) {
+    constructor() {
         super();
         this.minStars = 4.0;
         this.maxStars = 4.99;
         this.channel = null;
         this.client = Client;
-        this.gameId = 77296421;
+        this.gameId = 77370104;
         this.allowBeatmap = false;
         this.matchRunning = null;
+        this.fixedHost = false;
 
         this.playerQueue = null;
     }
@@ -36,25 +34,25 @@ class Bot extends EventEmitter {
     async start() {
         try {
             await this.client.connect();
-            console.log("Login successful!");
+            console.log('Login successful!');
 
-            this.channel = await this.client.getChannel(`#mp_${this.gameId}`)
-            
-            console.log("Joining channel.");
+            this.channel = await this.client.getChannel(`#mp_${this.gameId}`);
+
+            console.log('Joining channel.');
             await this.channel.join();
 
-            console.log("Updating settings.");
-            await this.channel.lobby.setSettings(0, 0, 8);
-            await this.channel.lobby.setMods("", true);
+            console.log('Updating settings.');
+            await this.channel.lobby.setSettings(0, 0, 10);
+            await this.channel.lobby.setMods('', true);
 
             // Initialize player list
             // Setup listeners
 
-            console.log("Setting up listeners.");
-            this._setupLobbyListeners();
-            this._setupClientListeners();
+            console.log('Setting up listeners.');
+            this.setupLobbyListeners();
+            this.setupClientListeners();
 
-            console.log("Initializing players.");
+            console.log('Initializing players.');
             this.playerQueue = new PlayerQueue(this);
 
             console.log(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
@@ -63,61 +61,66 @@ class Bot extends EventEmitter {
         }
     }
 
-    _setupLobbyListeners() {
-        // Beatmap
-        this.channel.lobby.on("beatmap", async (beatmap) => {
-            listeners.lobby.beatmap.forEach(beatmapListener => {
-                new beatmapListener(beatmap, this).listener();
-            })
+    setupLobbyListeners() {
+    // Beatmap
+        this.channel.lobby.on('beatmap', async (beatmap) => {
+            listeners.lobby.beatmap.forEach((BeatmapListener) => {
+                new BeatmapListener(beatmap, this).listener();
+            });
         });
 
-        this.channel.lobby.on("playerJoined", (obj) => {
+        this.channel.lobby.on('playerJoined', (obj) => {
             this.playerQueue.add(obj.player.user.username, obj.player);
         });
 
-        this.channel.lobby.on("playerLeft", (obj) => {
+        this.channel.lobby.on('playerLeft', (obj) => {
             this.playerQueue.remove(obj.user.username);
         });
 
-        this.channel.lobby.on("matchFinished", (scores) => {
+        this.channel.lobby.on('matchFinished', () => {
             this.matchRunning = false;
             this.playerQueue.next();
         });
 
-        this.channel.lobby.on("matchStarted", async () => {
+        this.channel.lobby.on('matchStarted', async () => {
             this.matchRunning = true;
-            listeners.lobby.matchStarted.forEach(matchStartedListener => {
-                if (matchStartedListener.name === "RestrictedBeatmapListener") {
-                    new matchStartedListener(this.channel.lobby.beatmap, this, true).listener();
+            listeners.lobby.matchStarted.forEach((MatchStartedListener) => {
+                if (MatchStartedListener.name === 'RestrictedBeatmapListener') {
+                    new MatchStartedListener(this.channel.lobby.beatmap, this, true).listener();
                 }
+            });
+        });
+
+        this.channel.lobby.on('host', (currentHost) => {
+            listeners.lobby.host.forEach((HostListener) => {
+                new HostListener(currentHost, this).listener();
             });
         });
     }
 
-    _setupClientListeners() {
-        // Admin / Operator commands
-        this.client.on("CM", (message) => {
+    setupClientListeners() {
+    // Admin / Operator commands
+        this.client.on('CM', (message) => {
             if (!message.user.isClient()) {
                 return;
             }
 
             // Skip to given user name
-            let r = /^(\!skipTo) (.+)$/i
+            let r = /^(!skipTo) (.+)$/i;
             if (r.test(message.message)) {
                 const m = r.exec(message.message);
                 this.playerQueue.skipTo(m[2]);
             }
 
-            r = /^\!allow$/i
+            r = /^!allow$/i;
             if (r.test(message.message)) {
-                const m = r.exec(message.message);
                 this.allowBeatmap = true;
-                this.channel.sendMessage("Beatmap restriction overriden for the next map by match owner.");
+                this.channel.sendMessage('Beatmap restriction overriden for the next map by match owner.');
             }
         });
 
-        this.client.on("CM", (message) => {
-            const r = /^\!skip$/i
+        this.client.on('CM', (message) => {
+            const r = /^!skip$/i;
             if (r.test(message.message)) {
                 this.playerQueue.skipTurn(message.user.username);
             }
@@ -125,6 +128,6 @@ class Bot extends EventEmitter {
     }
 }
 
-const bot = new Bot(Client);
+const bot = new Bot();
 
 module.exports = bot;
