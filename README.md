@@ -1,7 +1,7 @@
 # osu-autohost-bot
 
 ## API Key retrieval
-You can get an API key by filling out an application form at https://osu.ppy.sh/p/api
+You can get an API key by filling out an application form at https://osu.ppy.sh/p/api/
 
 ## IRC Password
 The password used to IRC is not the same you use for your account. You can request your IRC password from https://old.ppy.sh/p/irc
