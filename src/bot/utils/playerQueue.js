@@ -91,7 +91,6 @@ class PlayerQueue {
         this.currentHost = nextPlayer.name;
         this.queue.push(nextPlayer);
 
-        this.bot.channel.sendMessage("Performing AFK check.");
         /**
          * @type {BanchoBotStatsReturn}
          */
