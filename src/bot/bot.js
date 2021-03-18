@@ -1,26 +1,35 @@
-const { EventEmitter } = require('events');
-const Bancho = require('bancho.js');
-
-const Client = new Bancho.BanchoClient({
-    username: process.env.OSU_USER,
-    password: process.env.OSU_PASS,
-    apiKey: process.env.API_KEY,
-});
-
 const listeners = require('./listeners');
 const PlayerQueue = require('./utils/playerQueue');
+const { EventEmitter } = require('events');
+const { BanchoLobby, BanchoMultiplayerChannel, BanchoClient } = require('bancho.js');
 
 /**
  * Bot class
  */
 class Bot extends EventEmitter {
-    constructor() {
+    /**
+     * 
+     * @param {BanchoClient} Client 
+     * @param {string} lobbyName 
+     * @param {number} teamMode 
+     * @param {number} size 
+     * @param {Array} mods 
+     * @param {number} minStars
+     * @param {number} maxStars
+     */
+    constructor(Client, lobbyName, teamMode, size, mods, minStars, maxStars) {
         super();
-        this.minStars = 4.0;
-        this.maxStars = 4.99;
+        this.lobbyName = lobbyName;
+        this.teamMode = teamMode;
+        this.size = size;
+        this.mods = mods;
+        this.minStars = minStars;
+        this.maxStars = maxStars;
         this.channel = null;
+        /**
+         * @type {BanchoClient}
+         */
         this.client = Client;
-        this.gameId = 77375119;
         this.allowBeatmap = false;
         this.matchRunning = null;
         this.fixedHost = false;
@@ -36,14 +45,19 @@ class Bot extends EventEmitter {
             await this.client.connect();
             console.log('Login successful!');
 
-            this.channel = await this.client.getChannel(`#mp_${this.gameId}`);
-
-            console.log('Joining channel.');
-            await this.channel.join();
+            /**
+             * @type {BanchoMultiplayerChannel}
+             */
+            this.channel = await this.client.createLobby(this.lobbyName);
+            console.log('Created lobby.');
 
             console.log('Updating settings.');
-            await this.channel.lobby.setSettings(0, 0, 10);
-            await this.channel.lobby.setMods('', true);
+            await this.channel.lobby.setSettings(this.teamMode, 0, this.size);
+            await this.channel.lobby.setMods(this.mods, this.mods.indexOf("Freemod") > -1);
+            console.log('Updated settings.');
+
+            await this.channel.lobby.setPassword("");
+            console.log('Removed password.');
 
             // Initialize player list
             // Setup listeners
@@ -96,6 +110,13 @@ class Bot extends EventEmitter {
                 new HostListener(currentHost, this).listener();
             });
         });
+
+        process.on("SIGINT", async () => {
+            console.log("SIGINT received. Closing lobby and exiting...")
+    
+            await this.channel.lobby.closeLobby();
+            this.client.disconnect();
+        });
     }
 
     setupClientListeners() {
@@ -128,6 +149,4 @@ class Bot extends EventEmitter {
     }
 }
 
-const bot = new Bot();
-
-module.exports = bot;
+module.exports = Bot;
