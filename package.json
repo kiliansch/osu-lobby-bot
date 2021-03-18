@@ -8,8 +8,12 @@
   },
   "dependencies": {
     "bancho.js": "https://github.com/kiliansch/bancho.js",
+    "chalk": "^4.1.0",
     "dotenv": "^8.2.0",
+    "figlet": "^1.5.0",
+    "inquirer": "^8.0.0",
     "osu-sr-calculator": "^1.0.13",
+    "shelljs": "^0.8.4",
     "yargs": "^16.2.0",
     "yarn": "^1.22.10"
   },

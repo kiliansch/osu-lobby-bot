@@ -72,6 +72,10 @@ class PlayerQueue {
             name: playerName,
             lobbyPlayer
         });
+
+        if (this.queue.length === 1) {
+            this.next();
+        }
     }
 
     remove(playerName) {
@@ -128,8 +132,10 @@ class PlayerQueue {
             }
         });
 
-        // Add host to end
-        this.add(this.currentHost, this.bot.channel.lobby.players[this.currentHost]);
+        if (Boolean(this.currentHost)) {
+            // Add host to end
+            this.add(this.currentHost, this.bot.channel.lobby.players[this.currentHost]);
+        }
 
         console.log(`Initialized ${this.queue.length} players with ${this.currentHost} as Host.`);
         return this.announcePlayers();
