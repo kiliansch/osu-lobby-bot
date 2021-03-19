@@ -42,8 +42,12 @@ class Bot extends EventEmitter {
      */
     async start() {
         try {
-            await this.client.connect();
-            console.log('Login successful!');
+            if (!this.client.isConnected()) {
+                await this.client.connect();
+                console.log('Login successful!');
+            } else {
+                console.log('Already logged in. Continuing')
+            }
 
             /**
              * @type {BanchoMultiplayerChannel}
