@@ -41,46 +41,59 @@ class Bot extends EventEmitter {
      * Start the bot to a given game id, initialize players and setup listeners
      */
     async start() {
-        try {
-            if (!this.client.isConnected()) {
-                await this.client.connect();
-                console.log('Login successful!');
-            } else {
-                console.log('Already logged in. Continuing')
-            }
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!this.client.isConnected()) {
+                    await this.client.connect();
+                    console.log('Login successful!');
+                } else {
+                    console.log('Already logged in. Continuing')
+                }
+    
+                /**
+                 * @type {BanchoMultiplayerChannel}
+                 */
+                this.channel = await this.client.createLobby(this.lobbyName);
+                console.log('Created lobby.');
+    
+                console.log('Updating settings.');
+                await this.channel.lobby.setSettings(this.teamMode, 0, this.size);
+                await this.channel.lobby.setMods(this.mods, this.mods.indexOf("Freemod") > -1);
+                console.log('Updated settings.');
+    
+                await this.channel.lobby.setPassword("");
+                console.log('Removed password.');
+    
+                // Initialize player list
+                // Setup listeners
+    
+                console.log('Setting up listeners.');
+                this.setupLobbyListeners(resolve, reject);
+                this.setupClientListeners();
 
-            /**
-             * @type {BanchoMultiplayerChannel}
-             */
-            this.channel = await this.client.createLobby(this.lobbyName);
-            console.log('Created lobby.');
-
-            console.log('Updating settings.');
-            await this.channel.lobby.setSettings(this.teamMode, 0, this.size);
-            await this.channel.lobby.setMods(this.mods, this.mods.indexOf("Freemod") > -1);
-            console.log('Updated settings.');
-
-            await this.channel.lobby.setPassword("");
-            console.log('Removed password.');
-
-            // Initialize player list
-            // Setup listeners
-
-            console.log('Setting up listeners.');
-            this.setupLobbyListeners();
-            this.setupClientListeners();
-
-            console.log('Initializing players.');
-            this.playerQueue = new PlayerQueue(this);
-
-            console.log(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
-        } catch (error) {
-            console.error('Error starting bot', error);
-        }
+                // Resolve promise when lobby was closed
+                this.channel.partCallback = () => {
+                    resolve();
+                }
+    
+                console.log('Initializing players.');
+                this.playerQueue = new PlayerQueue(this);
+    
+                console.log(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
+            } catch (error) {
+                console.error('Error starting bot', error);
+                reject();
+            }    
+        });
     }
 
-    setupLobbyListeners() {
-    // Beatmap
+    /**
+     * 
+     * @param {method} resolve 
+     * @param {method} reject 
+     */
+    setupLobbyListeners(resolve, reject) {
+        // Beatmap
         this.channel.lobby.on('beatmap', async (beatmap) => {
             listeners.lobby.beatmap.forEach((BeatmapListener) => {
                 new BeatmapListener(beatmap, this).listener();
