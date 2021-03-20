@@ -1,10 +1,11 @@
-const { BanchoBotStatsReturn } = require("bancho.js");
+const { BanchoBotStatsReturn, BanchoLobbyPlayer } = require("bancho.js");
 const BanchoBotStatsCommand = require("bancho.js/lib/StatsCommand/BanchoBotStatsCommand");
 
 class PlayerQueue {
     constructor(bot) {
         this.queue = [];
         this.currentHost = null;
+        this.currentHostLobbyPlayer = null;
         this.bot = bot;
         this.rotationChange = true;
 
@@ -19,7 +20,7 @@ class PlayerQueue {
     skipTo(playerName) {
         const playerObj = this.queue.find((o) => o.name === playerName);
 
-        if (playerObj === undefined) {
+        if (!Boolean(playerObj)) {
             this.bot.channel.sendMessage(`Can't find a player named: ${playerName} :(`);
         }
 
@@ -49,8 +50,9 @@ class PlayerQueue {
         } else {
             this.bot.channel.sendMessage(`Skipped hosts up to ${playerName}`);
             this.announcePlayers();
-            this.rotationChange = false;
         }
+
+        this.rotationChange = false;
     }
 
     skipTurn(playerName) {
@@ -89,17 +91,38 @@ class PlayerQueue {
         this.rotationChange = true;
         const nextPlayer = this.queue.shift();
         this.currentHost = nextPlayer.name;
-        this.queue.push(nextPlayer);
+        this.currentHostLobbyPlayer = nextPlayer.lobbyPlayer;
 
         const stats = await nextPlayer.lobbyPlayer.user.stats();
         if (stats.status === 'Afk') {
             this.bot.channel.sendMessage(`Upcoming host named ${nextPlayer.name}s status is ${stats.status}. Skipping.`);
+            
+            this.queue.push(nextPlayer);
             this.next();
         } else {
             this.bot.channel.lobby.setHost(nextPlayer.name);
 
             this.announcePlayers();
+            this.queue.push(nextPlayer);
+
             this.rotationChange = false;
+        }
+    }
+
+    /**
+     * Moves the current host to the end of the queue. This is supposed
+     * to be called after the match ended and before the next player is
+     * getting host.
+     */
+    moveCurrentHostToEnd() {
+        const playerObj = this.queue.find((o) => o.name === this.currentHost);
+
+        if (Boolean(playerObj)) {
+            this.remove(this.currentHost);
+            this.queue.push({
+                name: this.currentHost,
+                lobbyPlayer: this.currentHostLobbyPlayer
+            });
         }
     }
 
@@ -109,7 +132,7 @@ class PlayerQueue {
     getQueueNames() {
         const playerNameList = this.queue.map((obj) => obj.name);
 
-        return playerNameList.join(', ');
+        return playerNameList.join(', ') + " ...";
     }
 
     /**

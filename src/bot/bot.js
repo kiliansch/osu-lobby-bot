@@ -108,6 +108,7 @@ class Bot extends EventEmitter {
         });
 
         this.channel.lobby.on('matchFinished', () => {
+            this.playerQueue.moveCurrentHostToEnd();
             this.playerQueue.next();
         });
 
