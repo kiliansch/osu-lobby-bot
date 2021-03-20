@@ -15,7 +15,8 @@ class NoManualHostPassListener {
 
         const correctNextHost = this.bot.playerQueue.queue[0];
         if (
-            this.bot.playerQueue.currentHost !== this.currentHost.user.username
+            Boolean(this.currentHost) 
+            && this.bot.playerQueue.currentHost !== this.currentHost.user.username
             && (
                 !this.bot.rotationChange
                 || this.currentHost.user.username !== correctNextHost.lobbyPlayer.user.username
