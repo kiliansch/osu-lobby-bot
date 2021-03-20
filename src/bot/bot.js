@@ -117,8 +117,11 @@ class Bot extends EventEmitter {
 
         process.on("SIGINT", async () => {
             console.log("SIGINT received. Closing lobby and exiting...")
-    
-            await this.channel.lobby.closeLobby();
+
+            if (this.channel.joined) {
+                await this.channel.lobby.closeLobby();
+            }
+            
             this.client.disconnect();
         });
     }
