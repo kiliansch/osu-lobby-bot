@@ -31,7 +31,6 @@ class Bot extends EventEmitter {
          */
         this.client = Client;
         this.allowBeatmap = false;
-        this.matchRunning = null;
         this.fixedHost = false;
 
         this.playerQueue = null;
@@ -109,12 +108,10 @@ class Bot extends EventEmitter {
         });
 
         this.channel.lobby.on('matchFinished', () => {
-            this.matchRunning = false;
             this.playerQueue.next();
         });
 
         this.channel.lobby.on('matchStarted', async () => {
-            this.matchRunning = true;
             listeners.lobby.matchStarted.forEach((MatchStartedListener) => {
                 if (MatchStartedListener.name === 'RestrictedBeatmapListener') {
                     new MatchStartedListener(this.channel.lobby.beatmap, this, true).listener();
