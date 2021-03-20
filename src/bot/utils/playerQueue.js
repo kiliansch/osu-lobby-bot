@@ -91,10 +91,7 @@ class PlayerQueue {
         this.currentHost = nextPlayer.name;
         this.queue.push(nextPlayer);
 
-        /**
-         * @type {BanchoBotStatsReturn}
-         */
-        const stats = await new BanchoBotStatsCommand(nextPlayer.lobbyPlayer.user).run();
+        const stats = await nextPlayer.lobbyPlayer.user.stats();
         if (stats.status === 'Afk') {
             this.bot.channel.sendMessage(`Upcoming host named ${nextPlayer.name}s status is ${stats.status}. Skipping.`);
             this.next();
