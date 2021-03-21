@@ -19,13 +19,8 @@ class Manager {
         await this.client.connect();
         console.log("connected");
 
-        let channel = await this.client.getChannel(`#mp_78603484`);
-        await channel.join();
-
-        console.log("joined channel")
-
-        this.client.on("CM", (message) => {
-            if (message.user.username === "BanchoBot")
+        this.client.on("PM", (message) => {
+            if (message.user.username === "BanchoBot" || message.self)
                 return;
 
             console.log("RECEIVED MESSAGE: " + message.message)

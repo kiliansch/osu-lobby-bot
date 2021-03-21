@@ -9,6 +9,7 @@ const Client = new Bancho.BanchoClient({
     username: process.env.OSU_USER,
     password: process.env.OSU_PASS,
     apiKey: process.env.API_KEY,
+    limiterPrivate: 2
 });
 
 let manager = new MessageManager(Client);
