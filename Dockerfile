@@ -4,6 +4,6 @@ COPY . /app
 
 WORKDIR /app
 
-RUN npm install -g yarn && yarn install
+RUN yarn install
 
 CMD ["npm", "start"]
