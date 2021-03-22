@@ -6,4 +6,4 @@ WORKDIR /app
 
 RUN yarn install
 
-CMD ["npm", "start"]
+CMD node /app/question_test.js
