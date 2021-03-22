@@ -20,28 +20,36 @@ class Manager {
         console.log("connected");
 
         this.client.on("PM", (message) => {
-            if (message.user.username === "BanchoBot" || message.self)
+            if (message.user.username === "BanchoBot" || message.self || message.user.isClient()) {
+                console.log("Blocked message.");
                 return;
+            }
 
-            console.log("RECEIVED MESSAGE: " + message.message)
+            console.log("RECEIVED MESSAGE: " + message.message);
 
             let runningQuestionnaire = this.runningQuestionnaires.find((o) => o.name === message.user.username);
-            let runningGames = this.runningGames.find((o) => o.name === message.user.username);
+            let runningGame = this.runningGames.find((o) => o.name === message.user.username);
+
+            if (Boolean(runningGame)) {
+                message.user.sendMessage("You already have a game running.");
+                return;
+            }
 
             if (Boolean(runningQuestionnaire)) {
                 runningQuestionnaire.questionnaire.handleInput(message.message);
+                return;
                 //message.user.sendMessage("You either already have a game running or not finished all inputs.");
-            } else {
-                const r = /^!start$/i;
-                if (r.test(message.message)) {
-                    let questionnaire = new Questionnaire(this, message);
-                    this.runningQuestionnaires.push({
-                        name: message.user.username,
-                        questionnaire: questionnaire
-                    });
+            }
+            
+            const r = /^!start$/i;
+            if (r.test(message.message)) {
+                let questionnaire = new Questionnaire(this, message);
+                this.runningQuestionnaires.push({
+                    name: message.user.username,
+                    questionnaire: questionnaire
+                });
 
-                    questionnaire.ask();
-                }
+                questionnaire.ask();
             }
         });
     }
