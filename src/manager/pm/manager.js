@@ -51,17 +51,46 @@ class Manager {
     }
 
     /**
-     * 
-     * @param {Questionnaire} questionnaire 
+     *
+     * @param {Questionnaire} questionnaire
      */
     evaluateQuestionnaire(questionnaire) {
+        // Remove questionnaire from running questionnaires array
         this.runningQuestionnaires = this.runningQuestionnaires.filter((running) => questionnaire.message.user.username !== running.name);
-        let answers = questionnaire.answers;
+        const { answers } = questionnaire;
 
-        console.log(answers);
         (() => {
-            let bot = new Bot(this.client, answers.lobbyName, 0, answers.size, ["Freemod"], answers.minStars, answers.maxStars);
+            // Add bot instance to running games
+            // Set creator as ref on joining
+            // Enable admin commands for refs
+            // Send invite link to creator
+
+            const bot = new Bot(this.client, answers.lobbyName, 0, answers.size, ['Freemod'], answers.minStars, answers.maxStars);
+            bot.lobbyListenersCallback = () => {
+                bot.channel.lobby.on('playerJoined', (playerObj) => {
+                    if (playerObj.player.user.username === questionnaire.message.user.username) {
+                        bot.channel.lobby.setRef(playerObj.player.user.username);
+                    }
+                });
+            };
+
             bot.start();
+
+            this.runningGames.push({
+                username: questionnaire.message.user.username,
+                bot,
+            });
+
+            // since we're not caring about the promises resolving, we wait till the lobby is created with a timeout
+            const inviteLinkTimeout = () => {
+                if (bot.channel) {
+                    const gameId = Number(bot.channel.topic.substring(18));
+                    this.message.user.sendMessage(`Join your game here: [osump://${gameId}/ ${bot.lobbyName}]`);
+
+                    clearTimeout(inviteLinkTimeout);
+                }
+            };
+            setTimeout(inviteLinkTimeout, 1000);
         })();
     }
 }

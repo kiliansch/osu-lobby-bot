@@ -1,19 +1,20 @@
+const { EventEmitter } = require('events');
+const { BanchoClient } = require('bancho.js');
 const listeners = require('./listeners');
 const PlayerQueue = require('./utils/playerQueue');
-const { EventEmitter } = require('events');
-const { BanchoLobby, BanchoMultiplayerChannel, BanchoClient } = require('bancho.js');
+const Help = require('./utils/help');
 
 /**
  * Bot class
  */
 class Bot extends EventEmitter {
     /**
-     * 
-     * @param {BanchoClient} Client 
-     * @param {string} lobbyName 
-     * @param {number} teamMode 
-     * @param {number} size 
-     * @param {Array} mods 
+     *
+     * @param {BanchoClient} Client
+     * @param {string} lobbyName
+     * @param {number} teamMode
+     * @param {number} size
+     * @param {Array} mods
      * @param {number} minStars
      * @param {number} maxStars
      */
@@ -34,6 +35,10 @@ class Bot extends EventEmitter {
         this.fixedHost = false;
 
         this.playerQueue = null;
+        this.refs = [];
+        this.gameId = null;
+
+        this.lobbyListenersCallback = null;
     }
 
     /**
@@ -46,52 +51,47 @@ class Bot extends EventEmitter {
                     await this.client.connect();
                     console.log('Login successful!');
                 } else {
-                    console.log('Already logged in. Continuing')
+                    console.log('Already logged in. Continuing');
                 }
-    
+
                 /**
                  * @type {BanchoMultiplayerChannel}
                  */
                 this.channel = await this.client.createLobby(this.lobbyName);
                 console.log('Created lobby.');
-    
+
                 console.log('Updating settings.');
                 await this.channel.lobby.setSettings(this.teamMode, 0, this.size);
-                await this.channel.lobby.setMods(this.mods, this.mods.indexOf("Freemod") > -1);
+                await this.channel.lobby.setMods(this.mods, this.mods.indexOf('Freemod') > -1);
                 console.log('Updated settings.');
-    
-                await this.channel.lobby.setPassword("");
+
+                await this.channel.lobby.setPassword('');
                 console.log('Removed password.');
-    
+
                 // Initialize player list
                 // Setup listeners
-    
+
                 console.log('Setting up listeners.');
-                this.setupLobbyListeners(resolve, reject);
+                this.setupLobbyListeners();
                 this.setupClientListeners();
 
                 // Resolve promise when lobby was closed
                 this.channel.partCallback = () => {
                     resolve();
-                }
-    
+                };
+
                 console.log('Initializing players.');
                 this.playerQueue = new PlayerQueue(this);
-    
+
                 console.log(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
             } catch (error) {
                 console.error('Error starting bot', error);
                 reject();
-            }    
+            }
         });
     }
 
-    /**
-     * 
-     * @param {method} resolve 
-     * @param {method} reject 
-     */
-    setupLobbyListeners(resolve, reject) {
+    setupLobbyListeners() {
         // Beatmap
         this.channel.lobby.on('beatmap', async (beatmap) => {
             listeners.lobby.beatmap.forEach((BeatmapListener) => {
@@ -126,42 +126,61 @@ class Bot extends EventEmitter {
             });
         });
 
-        process.on("SIGINT", async () => {
-            console.log("SIGINT received. Closing lobby and exiting...")
+        this.channel.lobby.on('refereeAdded', (playerName) => {
+            this.refs.push(playerName);
+        });
+
+        this.channel.lobby.on('refereeRemoved', (playerName) => {
+            this.refs = this.refs.filter((refArrayItem) => refArrayItem !== playerName);
+        });
+
+        process.on('SIGINT', async () => {
+            console.log('SIGINT received. Closing lobby and exiting...');
 
             if (this.channel.joined) {
                 await this.channel.lobby.closeLobby();
             }
-            
+
             this.client.disconnect();
         });
+
+        if (typeof this.lobbyListenersCallback === 'function') {
+            this.lobbyListenersCallback();
+        }
     }
 
     setupClientListeners() {
     // Admin / Operator commands
         this.client.on('CM', (message) => {
-            if (!message.user.isClient()) {
-                return;
-            }
+            if (message.user.isClient() || this.refs.includes(message.user.username)) {
+                // Skip to given user name
+                let r = /^(!skipTo) (.+)$/i;
+                if (r.test(message.message)) {
+                    const m = r.exec(message.message);
+                    this.playerQueue.skipTo(m[2]);
+                }
 
-            // Skip to given user name
-            let r = /^(!skipTo) (.+)$/i;
-            if (r.test(message.message)) {
-                const m = r.exec(message.message);
-                this.playerQueue.skipTo(m[2]);
-            }
-
-            r = /^!allow$/i;
-            if (r.test(message.message)) {
-                this.allowBeatmap = true;
-                this.channel.sendMessage('Beatmap restriction overriden for the next map by match owner.');
+                r = /^!allow$/i;
+                if (r.test(message.message)) {
+                    this.allowBeatmap = true;
+                    this.channel.sendMessage('Beatmap restriction overriden for the next map by match owner.');
+                }
             }
         });
 
         this.client.on('CM', (message) => {
-            const r = /^!skip$/i;
+            let r = /^!skipMe$/i;
             if (r.test(message.message)) {
                 this.playerQueue.skipTurn(message.user.username);
+            }
+
+            r = /^!botHelp$/i;
+            if (r.test(message.message)) {
+                let admin = false;
+                if (message.user.isClient() || this.refs.includes(message.user.username)) admin = true;
+
+                const helpLines = Help.getCommands(admin);
+                Object.keys(helpLines).forEach((key) => message.user.sendMessage(helpLines[key]));
             }
         });
     }
