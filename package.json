@@ -18,7 +18,8 @@
     "yarn": "^1.22.10"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint --fix src/"
   },
   "repository": {
     "type": "git",
