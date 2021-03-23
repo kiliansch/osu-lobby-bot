@@ -1,5 +1,5 @@
-const { BanchoBotStatsReturn, BanchoLobbyPlayer } = require("bancho.js");
-const BanchoBotStatsCommand = require("bancho.js/lib/StatsCommand/BanchoBotStatsCommand");
+const { BanchoBotStatsReturn, BanchoLobbyPlayer } = require('bancho.js');
+const BanchoBotStatsCommand = require('bancho.js/lib/StatsCommand/BanchoBotStatsCommand');
 
 class PlayerQueue {
     constructor(bot) {
@@ -20,7 +20,7 @@ class PlayerQueue {
     skipTo(playerName) {
         const playerObj = this.queue.find((o) => o.name === playerName);
 
-        if (!Boolean(playerObj)) {
+        if (!playerObj) {
             this.bot.channel.sendMessage(`Can't find a player named: ${playerName} :(`);
         }
 
@@ -72,7 +72,7 @@ class PlayerQueue {
     add(playerName, lobbyPlayer) {
         this.queue.push({
             name: playerName,
-            lobbyPlayer
+            lobbyPlayer,
         });
 
         if (this.queue.length === 1) {
@@ -96,7 +96,7 @@ class PlayerQueue {
         const stats = await nextPlayer.lobbyPlayer.user.stats();
         if (stats.status === 'Afk') {
             this.bot.channel.sendMessage(`Upcoming host named ${nextPlayer.name}s status is ${stats.status}. Skipping.`);
-            
+
             this.queue.push(nextPlayer);
             this.next();
         } else {
@@ -117,11 +117,11 @@ class PlayerQueue {
     moveCurrentHostToEnd() {
         const playerObj = this.queue.find((o) => o.name === this.currentHost);
 
-        if (Boolean(playerObj)) {
+        if (playerObj) {
             this.remove(this.currentHost);
             this.queue.push({
                 name: this.currentHost,
-                lobbyPlayer: this.currentHostLobbyPlayer
+                lobbyPlayer: this.currentHostLobbyPlayer,
             });
         }
     }
@@ -132,7 +132,7 @@ class PlayerQueue {
     getQueueNames() {
         const playerNameList = this.queue.map((obj) => obj.name);
 
-        return playerNameList.join(', ') + " ...";
+        return `${playerNameList.join(', ')} ...`;
     }
 
     /**
@@ -151,7 +151,7 @@ class PlayerQueue {
             }
         });
 
-        if (Boolean(this.currentHost)) {
+        if (this.currentHost) {
             // Add host to end
             this.add(this.currentHost, this.bot.channel.lobby.players[this.currentHost]);
         }

@@ -1,13 +1,13 @@
-const Questionnaire = require("../questionnaire")
-const Bot = require("../../bot/bot")
+const Questionnaire = require('../questionnaire');
+const Bot = require('../../bot/bot');
 
 /**
  * @class Manager - Manages incoming private messages and stars a bot after gathering all data.
  */
 class Manager {
     /**
-     * 
-     * @param {BanchoClient} Client 
+     *
+     * @param {BanchoClient} Client
      */
     constructor(Client) {
         this.client = Client;
@@ -17,36 +17,32 @@ class Manager {
 
     async start() {
         await this.client.connect();
-        console.log("connected");
+        console.log('connected');
 
-        this.client.on("PM", (message) => {
-            if (message.user.username === "BanchoBot" || message.self || message.user.isClient()) {
-                console.log("Blocked message.");
+        this.client.on('PM', (message) => {
+            if (message.user.username === 'BanchoBot' || message.self || message.user.isClient()) {
+                console.log('Blocked message.');
                 return;
             }
 
-            console.log("RECEIVED MESSAGE: " + message.message);
-
-            let runningQuestionnaire = this.runningQuestionnaires.find((o) => o.name === message.user.username);
-            let runningGame = this.runningGames.find((o) => o.name === message.user.username);
-
-            if (Boolean(runningGame)) {
-                message.user.sendMessage("You already have a game running.");
-                return;
-            }
-
-            if (Boolean(runningQuestionnaire)) {
+            const runningQuestionnaire = this.runningQuestionnaires.find((o) => o.name === message.user.username);
+            if (runningQuestionnaire) {
                 runningQuestionnaire.questionnaire.handleInput(message.message);
                 return;
-                //message.user.sendMessage("You either already have a game running or not finished all inputs.");
             }
-            
-            const r = /^!start$/i;
+
+            const runningGame = this.runningGames.find((o) => o.name === message.user.username);
+            if (runningGame) {
+                message.user.sendMessage('You already have a game running.');
+                return;
+            }
+
+            const r = /^!new$/i;
             if (r.test(message.message)) {
-                let questionnaire = new Questionnaire(this, message);
+                const questionnaire = new Questionnaire(this, message);
                 this.runningQuestionnaires.push({
                     name: message.user.username,
-                    questionnaire: questionnaire
+                    questionnaire,
                 });
 
                 questionnaire.ask();
