@@ -54,7 +54,11 @@ class Questionnaire {
                 input = Number(input);
 
                 if (Number.isNaN(input)) {
-                    return 'You gotta enter a number...';
+                    return 'You gotta enter a number... Try again.';
+                }
+
+                if (input < 0) {
+                    return "Can't be that negative :) Try again.";
                 }
 
                 return true;
@@ -68,15 +72,41 @@ class Questionnaire {
                 input = Number(input);
 
                 if (Number.isNaN(input)) {
-                    return 'You gotta enter a number...';
+                    return 'You gotta enter a number... Try again.';
+                }
+
+                if (input < 0) {
+                    return "Can't be that negative :) Try again.";
                 }
 
                 if (this.answers.minStars > 0 && input < this.answers.minStars) {
-                    return `You've set min stars of "${this.answers.minStars}". ${input} is not equal or higher. Is it?`;
+                    return `You've set min stars of "${this.answers.minStars}". "${input}" is not equal or higher. Is it? Try again.`;
                 }
 
                 return true;
             },
+        });
+        questions.push({
+            name: 'confirmation',
+            type: 'string',
+            message: () => {
+                let message = [
+                    'Type !confirm to accept or !cancel to cancel',
+                    `Lobby name: ${this.answers.lobbyName}`,
+                    `Size: ${this.answers.size}`,
+                    `Min Stars: ${this.answers.minStars}`,
+                    `Max Stars: ${this.answers.maxStars}`
+                ];
+
+                return message;
+            },
+            validate: (input) => {
+                if (input !== '!confirm' && input !== '!cancel') {
+                    return "Only !confirm or !cancel allowed.";
+                }
+
+                return true;
+            }
         });
 
         this.questions = questions;
@@ -91,7 +121,14 @@ class Questionnaire {
                 const current = this.questions[index];
                 if (!current.hasOwnProperty('answered')) {
                     this.currentQuestion = current;
-                    this.message.user.sendMessage(current.message);
+                    if (typeof current.message === 'string') {
+                        this.message.user.sendMessage(current.message);
+                    }
+
+                    if (typeof current.message === 'function') {
+                        let messages = current.message();
+                        Object.keys(messages).forEach((key) => this.message.user.sendMessage(messages[key]));
+                    }
 
                     throw BreakException;
                 }
