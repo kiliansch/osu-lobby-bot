@@ -6,4 +6,4 @@ WORKDIR /app
 
 RUN yarn install
 
-CMD node /app/question_test.js
+CMD node /app/lobbyBot.js
