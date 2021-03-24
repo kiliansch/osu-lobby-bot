@@ -142,6 +142,8 @@ class Bot extends EventEmitter {
             }
 
             this.client.disconnect();
+
+            process.exit(0);
         });
 
         if (typeof this.lobbyListenersCallback === 'function') {
