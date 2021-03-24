@@ -29,20 +29,6 @@ class Manager {
 
             this.handleQuestionnaire(message);
         });
-
-        // let channel = await this.client.getChannel(`#mp_78934011`);
-        // await channel.join();
-
-        // console.log("joined channel")
-
-        // this.client.on('CM', (message) => {
-        //     if (message.user.ircUsername === 'BanchoBot' || message.self) {
-        //         console.log(`Blocked channel message => ${message.user.ircUsername}: ${message.message}`);
-        //         return;
-        //     }
-
-        //     this.handleQuestionnaire(message);
-        // })
     }
 
     async handleQuestionnaire(message) {
@@ -53,13 +39,13 @@ class Manager {
         }
 
         const runningGame = this.runningGames.find((o) => o.name === message.user.username);
-        if (runningGame) {
-            message.user.sendMessage('You already have a game running.');
-            return;
-        }
 
         const r = /^!new$/i;
         if (r.test(message.message)) {
+            if (runningGame) {
+                message.user.sendMessage('You already have a game running.');
+                return;
+            }
             const questionnaire = new Questionnaire(this, message);
             this.runningQuestionnaires.push({
                 name: message.user.username,
@@ -101,8 +87,14 @@ class Manager {
             const bot = new Bot(Client, answers.lobbyName, 0, answers.size, ['Freemod'], answers.minStars, answers.maxStars);
             bot.lobbyListenersCallback = () => {
                 bot.channel.lobby.on('playerJoined', (playerObj) => {
-                    if (playerObj.player.user.username === questionnaire.message.user.username) {
-                        bot.channel.lobby.setRef(playerObj.player.user.username);
+                    let username = questionnaire.message.user.username !== undefined ? questionnaire.message.user.username : questionnaire.message.user.ircUsername
+
+                    console.log("PLAYER JOINED!!");
+                    console.log(playerObj.player.user.username)
+                    console.log(username)
+                    //
+                    if (playerObj.player.user.username === username) {
+                        bot.channel.lobby.addRef(playerObj.player.user.username);
                     }
                 });
             };
