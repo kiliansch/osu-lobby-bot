@@ -1,5 +1,6 @@
 const Regexes = require('bancho.js/lib/Multiplayer/BanchoLobbyRegexes');
 const starRating = require('osu-sr-calculator');
+const logger = require('../../../../logging/logger');
 
 /**
  * Restricted Beatmap listener
@@ -104,7 +105,7 @@ class RestrictedBeatmapListener {
                 const result = await starRating.calculateStarRating(this.beatmap.id, ['DT']);
                 difficulty = result.DT;
             } catch (error) {
-                console.error(error);
+                logger.error(error);
             }
         }
 
@@ -123,7 +124,7 @@ class RestrictedBeatmapListener {
                 const result = await starRating.calculateStarRating(this.beatmap.id, ['DT']);
                 difficulty = result.DT;
             } catch (error) {
-                console.error(error);
+                logger.error(error);
             }
         }
 

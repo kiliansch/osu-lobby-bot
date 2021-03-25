@@ -1,6 +1,7 @@
+const Bancho = require('bancho.js');
 const Questionnaire = require('../questionnaire');
 const Bot = require('../../bot/bot');
-const Bancho = require('bancho.js');
+const logger = require('../../logging/logger');
 
 /**
  * @class Manager - Manages incoming private messages and stars a bot after gathering all data.
@@ -18,12 +19,12 @@ class Manager {
 
     async start() {
         await this.client.connect();
-        console.log('connected');
+        logger.info('connected');
 
         this.client.on('PM', (message) => {
-            console.log("PRIVATE MESSAGE");
+            logger.info('PRIVATE MESSAGE');
             if (message.user.ircUsername === 'BanchoBot' || message.self || message.user.isClient()) {
-                console.log(`Blocked private message => ${message.user.ircUsername}: ${message.message}`);
+                logger.info(`Blocked private message => ${message.user.ircUsername}: ${message.message}`);
                 return;
             }
 
@@ -32,6 +33,7 @@ class Manager {
     }
 
     async handleQuestionnaire(message) {
+        // eslint-disable-next-line
         const runningQuestionnaire = this.runningQuestionnaires.find((o) => o.name === message.user.username);
         if (runningQuestionnaire) {
             runningQuestionnaire.questionnaire.handleInput(message.message);
@@ -54,7 +56,6 @@ class Manager {
 
             questionnaire.ask();
         }
-
     }
 
     /**
@@ -63,11 +64,12 @@ class Manager {
      */
     evaluateQuestionnaire(questionnaire) {
         // Remove questionnaire from running questionnaires array
+        // eslint-disable-next-line
         this.runningQuestionnaires = this.runningQuestionnaires.filter((running) => questionnaire.message.user.username !== running.name);
         const { answers } = questionnaire;
 
         if (answers.confirmation === '!cancel') {
-            questionnaire.message.user.sendMessage("Match creation cancelled.");
+            questionnaire.message.user.sendMessage('Match creation cancelled.');
             return;
         }
 
@@ -81,17 +83,18 @@ class Manager {
             const Client = new Bancho.BanchoClient({
                 username: process.env.OSU_USER,
                 password: process.env.OSU_PASS,
-                apiKey: process.env.API_KEY
+                apiKey: process.env.API_KEY,
             });
 
             const bot = new Bot(Client, answers.lobbyName, 0, answers.size, ['Freemod'], answers.minStars, answers.maxStars);
             bot.lobbyListenersCallback = () => {
                 bot.channel.lobby.on('playerJoined', (playerObj) => {
-                    let username = questionnaire.message.user.username !== undefined ? questionnaire.message.user.username : questionnaire.message.user.ircUsername
+                    // eslint-disable-next-line
+                    const username = questionnaire.message.user.username !== undefined ? questionnaire.message.user.username : questionnaire.message.user.ircUsername;
 
-                    console.log("PLAYER JOINED!!");
-                    console.log(playerObj.player.user.username)
-                    console.log(username)
+                    logger.info('PLAYER JOINED!!');
+                    logger.info(playerObj.player.user.username);
+                    logger.info(username);
                     //
                     if (playerObj.player.user.username === username) {
                         bot.channel.lobby.addRef(playerObj.player.user.username);
@@ -106,9 +109,14 @@ class Manager {
                 bot,
             });
 
-            // since we're not caring about the promises resolving, we wait till the lobby is created with a timeout
-            let inviteLinkInterval = setInterval(() => {
-                if (bot.channel !== null && bot.channel.hasOwnProperty('joined') && bot.channel.joined) {
+            // since we're not caring about the promises resolving,
+            // we wait till the lobby is created with a timeout
+            const inviteLinkInterval = setInterval(() => {
+                if (
+                    bot.channel !== null
+                    && Object.prototype.hasOwnProperty.call(bot, 'joined')
+                    && bot.channel.joined
+                ) {
                     const gameId = Number(bot.channel.topic.split('#')[1]);
                     questionnaire.message.user.sendMessage(`Join your game here: [osump://${gameId}/ ${bot.lobbyName}]`);
 

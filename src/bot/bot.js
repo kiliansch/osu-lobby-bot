@@ -1,8 +1,8 @@
 const { EventEmitter } = require('events');
-const { BanchoClient } = require('bancho.js');
 const listeners = require('./listeners');
 const PlayerQueue = require('./utils/playerQueue');
 const Help = require('./utils/help');
+const logger = require('../logging/logger');
 
 /**
  * Bot class
@@ -45,50 +45,42 @@ class Bot extends EventEmitter {
      * Start the bot to a given game id, initialize players and setup listeners
      */
     async start() {
-        return new Promise(async (resolve, reject) => {
-            try {
-                if (!this.client.isConnected()) {
-                    await this.client.connect();
-                    console.log('Login successful!');
-                } else {
-                    console.log('Already logged in. Continuing');
-                }
+        try {
+            if (!this.client.isConnected()) {
+                await this.client.connect();
+                logger.info('Login successful!');
+            } else {
+                logger.info('Already logged in. Continuing');
+            }
 
-                /**
+            /**
                  * @type {BanchoMultiplayerChannel}
                  */
-                this.channel = await this.client.createLobby(this.lobbyName);
-                console.log('Created lobby.');
+            this.channel = await this.client.createLobby(this.lobbyName);
+            logger.info('Created lobby.');
 
-                console.log('Updating settings.');
-                await this.channel.lobby.setSettings(this.teamMode, 0, this.size);
-                await this.channel.lobby.setMods(this.mods, this.mods.indexOf('Freemod') > -1);
-                console.log('Updated settings.');
+            logger.info('Updating settings.');
+            await this.channel.lobby.setSettings(this.teamMode, 0, this.size);
+            await this.channel.lobby.setMods(this.mods, this.mods.indexOf('Freemod') > -1);
+            logger.info('Updated settings.');
 
-                await this.channel.lobby.setPassword('');
-                console.log('Removed password.');
+            await this.channel.lobby.setPassword('');
+            logger.info('Removed password.');
 
-                // Initialize player list
-                // Setup listeners
+            // Initialize player list
+            // Setup listeners
 
-                console.log('Setting up listeners.');
-                this.setupLobbyListeners();
-                this.setupClientListeners();
+            logger.info('Setting up listeners.');
+            this.setupLobbyListeners();
+            this.setupClientListeners();
 
-                // Resolve promise when lobby was closed
-                this.channel.partCallback = () => {
-                    resolve();
-                };
+            logger.info('Initializing players.');
+            this.playerQueue = new PlayerQueue(this);
 
-                console.log('Initializing players.');
-                this.playerQueue = new PlayerQueue(this);
-
-                console.log(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
-            } catch (error) {
-                console.error('Error starting bot', error);
-                reject();
-            }
-        });
+            logger.info(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
+        } catch (error) {
+            logger.error('Error starting bot', error);
+        }
     }
 
     setupLobbyListeners() {
@@ -135,7 +127,7 @@ class Bot extends EventEmitter {
         });
 
         process.on('SIGINT', async () => {
-            console.log('SIGINT received. Closing lobby and exiting...');
+            logger.info('SIGINT received. Closing lobby and exiting...');
 
             if (this.channel.joined) {
                 await this.channel.lobby.closeLobby();
@@ -179,7 +171,9 @@ class Bot extends EventEmitter {
             r = /^!botHelp$/i;
             if (r.test(message.message)) {
                 let admin = false;
-                if (message.user.isClient() || this.refs.includes(message.user.username)) admin = true;
+                if (message.user.isClient() || this.refs.includes(message.user.username)) {
+                    admin = true;
+                }
 
                 const helpLines = Help.getCommands(admin);
                 Object.keys(helpLines).forEach((key) => message.user.sendMessage(helpLines[key]));

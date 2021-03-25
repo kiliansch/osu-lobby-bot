@@ -1,5 +1,4 @@
-const { BanchoBotStatsReturn, BanchoLobbyPlayer } = require('bancho.js');
-const BanchoBotStatsCommand = require('bancho.js/lib/StatsCommand/BanchoBotStatsCommand');
+const logger = require('../../logging/logger');
 
 class PlayerQueue {
     constructor(bot) {
@@ -140,7 +139,7 @@ class PlayerQueue {
      */
     setupPlayerQueue() {
         if (this.bot.channel.lobby.players.length === 0) {
-            return console.error("No players found. Can't continue!");
+            return logger.error("No players found. Can't continue!");
         }
 
         Object.keys(this.bot.channel.lobby.players).forEach((playerName) => {
@@ -156,7 +155,7 @@ class PlayerQueue {
             this.add(this.currentHost, this.bot.channel.lobby.players[this.currentHost]);
         }
 
-        console.log(`Initialized ${this.queue.length} players with ${this.currentHost} as Host.`);
+        logger.info(`Initialized ${this.queue.length} players with ${this.currentHost} as Host.`);
         return this.announcePlayers();
     }
 

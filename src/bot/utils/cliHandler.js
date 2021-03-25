@@ -3,8 +3,8 @@
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 const figlet = require('figlet');
-const shelljs = require('shelljs');
 const { BanchoLobbyTeamModes } = require('bancho.js');
+const logger = require('../../logging/logger');
 
 /**
  *
@@ -20,8 +20,8 @@ class CliHandler {
     /**
      * Intro message
      */
-    intro() {
-        console.log(chalk.green(figlet.textSync('osu! lobby bot', {
+    static intro() {
+        logger.info(chalk.green(figlet.textSync('osu! lobby bot', {
             font: 'standard',
         })));
     }
@@ -29,6 +29,7 @@ class CliHandler {
     /**
      * @returns {object} - Keys and values of requested user input
      */
+    // eslint-disable-next-line
     async getUserInput() {
         const questions = [];
 
@@ -122,7 +123,8 @@ class CliHandler {
             },
         });
 
-        return await inquirer.prompt(questions);
+        const answers = await inquirer.prompt(questions);
+        return answers;
     }
 }
 
