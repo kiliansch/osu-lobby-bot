@@ -2,11 +2,11 @@
 This bot is able to manage a lobby. It is mainly focussed around automatic host rotation and beatmap star difficulty restriction.
 You can either run a single instance of the bot or have it be chat enabled. In chat enabled mode multiple people can send a private message with a keyword to the account the bot is running with and a process will be started asking for necessary values to create a new, managed lobby.
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# !!!                         IMPORTANT NOTE                         !!!
-# !!!  MULTIPLAYER LOBBIES CREATED BY ONE ACCOUNT ARE LIMITED TO 4.  !!!
-# !!! THIS IS A WORK IN PROGRESS. THINGS MIGHT CHANGE WITHOUT NOTICE !!!
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+> !!!                         IMPORTANT NOTE                         !!!
+> !!!  MULTIPLAYER LOBBIES CREATED BY ONE ACCOUNT ARE LIMITED TO 4.  !!!
+> !!! THIS IS A WORK IN PROGRESS. THINGS MIGHT CHANGE WITHOUT NOTICE !!!
+> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ### Commands
 - !botHelp – Will display available lobby commands in a private message
