@@ -3,14 +3,13 @@ name: Publish Docker image
 on:
   push:
     branches:
-      - staging
+      - 'staging'
     tags:
-      - v*
+      - 'v*'
 
 jobs:
   push-to-registry:
     runs-on: ubuntu-latest
-    # checkout the repo
     -
       name: 'Checkout GitHub Action'
       uses: actions/checkout@main

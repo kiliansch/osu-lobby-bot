@@ -3,14 +3,13 @@ name: Linux_Container_Workflow
 on:
   push:
     branches:
-      - staging
+      - 'staging'
     tags:
-      - test*
+      - 'test*'
 jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
         steps:
-        # checkout the repo
         - name: 'Checkout GitHub Action'
           uses: actions/checkout@main
 
