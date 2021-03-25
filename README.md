@@ -1,21 +1,24 @@
 ## osu-lobby-bot
 This bot is able to manage a lobby. It is mainly focussed around automatic host rotation and beatmap star difficulty restriction.
+
 You can either run a single instance of the bot or have it be chat enabled. In chat enabled mode multiple people can send a private message with a keyword to the account the bot is running with and a process will be started asking for necessary values to create a new, managed lobby.
 
-> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-> !!!                         IMPORTANT NOTE                         !!!
-> !!!  MULTIPLAYER LOBBIES CREATED BY ONE ACCOUNT ARE LIMITED TO 4.  !!!
-> !!! THIS IS A WORK IN PROGRESS. THINGS MIGHT CHANGE WITHOUT NOTICE !!!
-> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+```
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!                         IMPORTANT NOTE                         !!!
+!!!  MULTIPLAYER LOBBIES CREATED BY ONE ACCOUNT ARE LIMITED TO 4.  !!!
+!!! THIS IS A WORK IN PROGRESS. THINGS MIGHT CHANGE WITHOUT NOTICE !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+```
 
 ### Commands
-- !botHelp – Will display available lobby commands in a private message
-- !skipMe – Will skip your next turn and put you back to the end of the host queue.
-- !new – Will start the process of creating a new managed lobby.
+- `!botHelp` – Will display available lobby commands in a private message
+- `!skipMe` – Will skip your next turn and put you back to the end of the host queue.
+- `!new` – Will start the process of creating a new managed lobby.
 
 ### Admin commands
-- !allow – Will disable beatmap restriction for upcoming round.
-- !skipTo {playerName} – Will skip the queue to given player name. All skipped players will be put to the end of queue as if they had been host already.
+- `!allow` – Will disable beatmap restriction for upcoming round.
+- `!skipTo {playerName}` – Will skip the queue to given player name. All skipped players will be put to the end of queue as if they had been host already.
 
 ### Usage
 
