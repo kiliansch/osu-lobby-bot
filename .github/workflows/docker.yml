@@ -4,6 +4,7 @@ on:
     push:
         tags:
             - 'v*'
+            - 'deployment.test*'
 
 jobs:
     push-to-registry:
@@ -31,4 +32,4 @@ jobs:
           with:
             context: .
             push: ${{ github.event_name != 'pull_request' }}
-            tags: pwnz0r/node:${{ github.sha }}
+            tags: pwnz0r/node:${{ github.sha }}, latest
