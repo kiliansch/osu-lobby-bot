@@ -22,7 +22,6 @@ class Manager {
         logger.info('connected');
 
         this.client.on('PM', (message) => {
-            logger.info('PRIVATE MESSAGE');
             if (message.user.ircUsername === 'BanchoBot' || message.self || message.user.isClient()) {
                 logger.info(`Blocked private message => ${message.user.ircUsername}: ${message.message}`);
                 return;
@@ -32,22 +31,25 @@ class Manager {
         });
     }
 
+    /**
+     *
+     * @param {BanchoMessage} message
+     * @returns
+     */
     async handleQuestionnaire(message) {
-        // eslint-disable-next-line
-        const runningQuestionnaire = this.runningQuestionnaires.find((o) => o.name === message.user.username);
-        if (runningQuestionnaire) {
-            runningQuestionnaire.questionnaire.handleInput(message.message);
+        const running = this.runningQuestionnaires.find((o) => o.name === message.user.username);
+        if (running) {
+            running.questionnaire.handleInput(message.message);
             return;
         }
 
-        const runningGame = this.runningGames.find((o) => o.name === message.user.username);
-
         const r = /^!new$/i;
         if (r.test(message.message)) {
-            if (runningGame) {
+            if (this.runningGames.find((o) => o.name === message.user.username)) {
                 message.user.sendMessage('You already have a game running.');
                 return;
             }
+
             const questionnaire = new Questionnaire(this, message);
             this.runningQuestionnaires.push({
                 name: message.user.username,
@@ -65,7 +67,10 @@ class Manager {
     evaluateQuestionnaire(questionnaire) {
         // Remove questionnaire from running questionnaires array
         // eslint-disable-next-line
-        this.runningQuestionnaires = this.runningQuestionnaires.filter((running) => questionnaire.message.user.username !== running.name);
+        this.runningQuestionnaires = this.runningQuestionnaires.filter((running) => {
+            return questionnaire.message.user.username !== running.name;
+        });
+
         const { answers } = questionnaire;
 
         if (answers.confirmation === '!cancel') {
@@ -94,18 +99,19 @@ class Manager {
 
             const bot = new Bot(Client, answers);
             bot.lobbyListenersCallback = () => {
-                bot.channel.lobby.on('playerJoined', (playerObj) => {
-                    // eslint-disable-next-line
-                    const username = questionnaire.message.user.username !== undefined ? questionnaire.message.user.username : questionnaire.message.user.ircUsername;
+                const addCreatorAsRefEvent = (playerObj) => {
+                    let username = questionnaire.message.user.ircUsername;
+                    if (questionnaire.message.user.username !== undefined) {
+                        username = questionnaire.message.user.username;
+                    }
 
-                    logger.info('PLAYER JOINED!!');
-                    logger.info(playerObj.player.user.username);
-                    logger.info(username);
-                    //
                     if (playerObj.player.user.username === username) {
                         bot.channel.lobby.addRef(playerObj.player.user.username);
+                        bot.channel.lobby.removeListener('playerJoined', addCreatorAsRefEvent);
                     }
-                });
+                };
+
+                bot.channel.lobby.on('playerJoined', addCreatorAsRefEvent);
             };
 
             bot.start();

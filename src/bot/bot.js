@@ -59,32 +59,22 @@ class Bot extends EventEmitter {
             }
 
             /**
-                 * @type {BanchoMultiplayerChannel}
-                 */
+             * @type {BanchoMultiplayerChannel}
+             */
             this.channel = await this.client.createLobby(this.lobbyName);
-            logger.info('Created lobby.');
-
-            logger.info('Updating settings.');
+            logger.info('Created lobby.', {lobby: this.channel.lobby});
             await this.channel.lobby.setSettings(this.teamMode, 0, this.size);
             await this.channel.lobby.setMods(this.mods, this.mods.indexOf('Freemod') > -1);
-            logger.info('Updated settings.');
-
             await this.channel.lobby.setPassword('');
-            logger.info('Removed password.');
 
-            // Initialize player list
-            // Setup listeners
-
-            logger.info('Setting up listeners.');
             this.setupLobbyListeners();
             this.setupClientListeners();
-
-            logger.info('Initializing players.');
             this.playerQueue = new PlayerQueue(this);
 
             logger.info(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
         } catch (error) {
             logger.error('Error starting bot', error);
+            process.exit(1);
         }
     }
 
@@ -113,6 +103,8 @@ class Bot extends EventEmitter {
             listeners.lobby.matchStarted.forEach((MatchStartedListener) => {
                 if (MatchStartedListener.name === 'RestrictedBeatmapListener') {
                     new MatchStartedListener(this.channel.lobby.beatmap, this, true).listener();
+                } else {
+                    new MatchStartedListener().listener();
                 }
             });
         });
@@ -151,19 +143,21 @@ class Bot extends EventEmitter {
     setupClientListeners() {
     // Admin / Operator commands
         this.client.on('CM', (message) => {
-            if (message.user.isClient() || this.refs.includes(message.user.username)) {
-                // Skip to given user name
-                let r = /^(!skipTo) (.+)$/i;
-                if (r.test(message.message)) {
-                    const m = r.exec(message.message);
-                    this.playerQueue.skipTo(m[2]);
-                }
+            if (!message.user.isClient() || !this.refs.includes(message.user.username)) {
+                return;
+            }
 
-                r = /^!allow$/i;
-                if (r.test(message.message)) {
-                    this.allowBeatmap = true;
-                    this.channel.sendMessage('Beatmap restriction overriden for the next map by match owner.');
-                }
+            // Skip to given user name
+            let r = /^(!skipTo) (.+)$/i;
+            if (r.test(message.message)) {
+                const m = r.exec(message.message);
+                this.playerQueue.skipTo(m[2]);
+            }
+
+            r = /^!allow$/i;
+            if (r.test(message.message)) {
+                this.allowBeatmap = true;
+                this.channel.sendMessage('Beatmap restriction overriden for the next map by match owner.');
             }
         });
 
