@@ -11,8 +11,8 @@ const Client = new Bancho.BanchoClient({
 });
 
 (async () => {
-    const params = await cli.run();
+    const options = await cli.run();
+    const OsuLobbyBot = new Bot(Client, options);
 
-    const OsuLobbyBot = new Bot(Client, params.lobbyName, params.teamMode, params.size, params.mods, params.minStars, params.maxStars);
     OsuLobbyBot.start();
 })();

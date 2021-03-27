@@ -86,7 +86,13 @@ class Manager {
                 apiKey: process.env.API_KEY,
             });
 
-            const bot = new Bot(Client, answers.lobbyName, 0, answers.size, ['Freemod'], answers.minStars, answers.maxStars);
+            const defaultOptions = {
+                teamMode: 0,
+                mods: ['Freemod'],
+            };
+            Object.assign(answers, defaultOptions);
+
+            const bot = new Bot(Client, answers);
             bot.lobbyListenersCallback = () => {
                 bot.channel.lobby.on('playerJoined', (playerObj) => {
                     // eslint-disable-next-line

@@ -12,7 +12,7 @@ const logger = require('../../logging/logger');
 class CliHandler {
     async run() {
         // Show intro
-        this.intro();
+        CliHandler.intro();
         // Gather data
         return this.getUserInput();
     }

@@ -18,27 +18,32 @@ class Bot extends EventEmitter {
      * @param {number} minStars
      * @param {number} maxStars
      */
-    constructor(Client, lobbyName, teamMode, size, mods, minStars, maxStars) {
+    constructor(Client, options = {}) {
         super();
-        this.lobbyName = lobbyName;
-        this.teamMode = teamMode;
-        this.size = size;
-        this.mods = mods;
-        this.minStars = minStars;
-        this.maxStars = maxStars;
-        this.channel = null;
+        const defaultOptions = {
+            minStars: 0,
+            maxStars: 0,
+        };
+        Object.assign(options, defaultOptions);
+
         /**
          * @type {BanchoClient}
          */
         this.client = Client;
+
+        this.lobbyName = options.lobbyName;
+        this.teamMode = options.teamMode;
+        this.size = options.size;
+        this.mods = options.mods;
+
+        this.channel = null;
+        this.playerQueue = null;
+        this.gameId = null;
+        this.lobbyListenersCallback = null;
+
         this.allowBeatmap = false;
         this.fixedHost = false;
-
-        this.playerQueue = null;
         this.refs = [];
-        this.gameId = null;
-
-        this.lobbyListenersCallback = null;
     }
 
     /**
