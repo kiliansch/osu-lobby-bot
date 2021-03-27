@@ -1,13 +1,13 @@
 {
   "name": "osu-lobby-bot",
-  "version": "0.2.1",
-  "description": "",
+  "version": "0.3.2-beta",
+  "description": "Lobby managing bot for free rythm game osu!",
   "main": "index.js",
   "directories": {
     "lib": "lib"
   },
   "dependencies": {
-    "bancho.js": "https://github.com/kiliansch/bancho.js",
+    "bancho.js": "^0.9.7",
     "chalk": "^4.1.0",
     "dotenv": "^8.2.0",
     "figlet": "^1.5.0",
