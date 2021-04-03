@@ -1,12 +1,7 @@
 {
-    "env": {
-        "browser": true,
-        "commonjs": true
-    },
-    "extends": [
-        "airbnb-base"
-    ],
+    "extends": ["airbnb", "prettier"],
+    "plugins": ["prettier"],
     "rules": {
-        "indent": ["error", 4]
+        "prettier/prettier": ["error"]
     }
 }
