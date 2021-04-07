@@ -14,6 +14,8 @@ You can either run a single instance of the bot or have it be chat enabled. In c
 ### Commands
 - `!botHelp` – Will display available lobby commands in a private message
 - `!skipMe` – Will skip your next turn and put you back to the end of the host queue.
+
+### Private Message commands
 - `!new` – Will start the process of creating a new managed lobby.
 
 ### Admin commands
