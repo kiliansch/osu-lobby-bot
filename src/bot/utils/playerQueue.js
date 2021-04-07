@@ -74,6 +74,8 @@ class PlayerQueue {
       lobbyPlayer,
     });
 
+    this.bot.emit('playerQueue', this.queue.length);
+
     if (this.queue.length === 1) {
       this.next();
     }
@@ -102,12 +104,15 @@ class PlayerQueue {
       this.next();
     } else {
       this.bot.channel.lobby.setHost(nextPlayer.name);
+      this.bot.emit('host', nextPlayer.name);
 
       this.announcePlayers();
       this.queue.push(nextPlayer);
 
       this.rotationChange = false;
     }
+
+    this.bot.emit('playerQueue', this.queue.length);
   }
 
   /**

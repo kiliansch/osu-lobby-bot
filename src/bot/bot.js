@@ -1,8 +1,9 @@
+const ConnectionStatus = require('./enums/connectionStatus');
 const { EventEmitter } = require('events');
-const listeners = require('./listeners');
-const PlayerQueue = require('./utils/playerQueue');
 const Help = require('./utils/help');
+const listeners = require('./listeners');
 const logger = require('../logging/logger');
+const PlayerQueue = require('./utils/playerQueue');
 
 /**
  * Bot class
@@ -44,6 +45,8 @@ class Bot extends EventEmitter {
     this.allowBeatmap = false;
     this.fixedHost = false;
     this.refs = [];
+
+    this.connectionStatus = ConnectionStatus.DISCONNECTED;
   }
 
   /**
@@ -51,6 +54,9 @@ class Bot extends EventEmitter {
    */
   async start() {
     try {
+      this.emit('starting');
+      logger.info('FIRED STARTING EVENT');
+      this.connectionStatus = ConnectionStatus.CONNECTING;
       if (!this.client.isConnected()) {
         await this.client.connect();
         logger.info('Login successful!');
@@ -66,6 +72,9 @@ class Bot extends EventEmitter {
       await this.channel.lobby.setSettings(this.teamMode, 0, this.size);
       await this.channel.lobby.setMods(this.mods, this.mods.indexOf('Freemod') > -1);
       await this.channel.lobby.setPassword('');
+      this.connectionStatus = ConnectionStatus.CONNECTED;
+      this.emit('started');
+      logger.info('FIRED STARTED EVENT');
 
       this.setupLobbyListeners();
       this.setupClientListeners();
@@ -73,9 +82,22 @@ class Bot extends EventEmitter {
 
       logger.info(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
     } catch (error) {
+      this.emit('error');
+      logger.info('FIRED ERROR EVENT');
+      this.connectionStatus = ConnectionStatus.ERROR;
       logger.error('Error starting bot', error);
       process.exit(1);
     }
+  }
+
+  async stop() {
+    if (this.channel.joined) {
+      await this.channel.lobby.closeLobby();
+    }
+
+    this.client.disconnect();
+
+    this.connectionStatus = ConnectionStatus.DISCONNECTED;
   }
 
   setupLobbyListeners() {
@@ -88,18 +110,26 @@ class Bot extends EventEmitter {
 
     this.channel.lobby.on('playerJoined', (obj) => {
       this.playerQueue.add(obj.player.user.username, obj.player);
+      this.emit('playerQueue', this.playerQueue.queue.length);
+      logger.info('FIRED PLAYERQUEUE JOINED EVENT');
     });
 
     this.channel.lobby.on('playerLeft', (obj) => {
       this.playerQueue.remove(obj.user.username);
+      this.emit('playerQueue', this.playerQueue.queue.length);
+      logger.info('FIRED PLAYERQUEUE LEFT EVENT');
     });
 
     this.channel.lobby.on('matchFinished', () => {
+      this.emit('matchFinished');
       this.playerQueue.moveCurrentHostToEnd();
       this.playerQueue.next();
+      this.emit('host', this.playerQueue.currentHost);
+      logger.info('FIRED HOST UPDATE EVENT');
     });
 
     this.channel.lobby.on('matchStarted', async () => {
+      this.emit('matchStarted');
       listeners.lobby.matchStarted.forEach((MatchStartedListener) => {
         if (MatchStartedListener.name === 'RestrictedBeatmapListener') {
           new MatchStartedListener(this.channel.lobby.beatmap, this, true).listener();
@@ -123,15 +153,9 @@ class Bot extends EventEmitter {
       this.refs = this.refs.filter((refArrayItem) => refArrayItem !== playerName);
     });
 
-    process.on('SIGINT', async () => {
+    process.on('SIGINT', () => {
       logger.info('SIGINT received. Closing lobby and exiting...');
-
-      if (this.channel.joined) {
-        await this.channel.lobby.closeLobby();
-      }
-
-      this.client.disconnect();
-
+      this.stop();
       process.exit(0);
     });
 
