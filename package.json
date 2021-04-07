@@ -1,6 +1,6 @@
 {
   "name": "osu-lobby-bot",
-  "version": "0.3.3-beta",
+  "version": "0.3.4-beta",
   "description": "Lobby managing bot for free rythm game osu!",
   "main": "index.js",
   "directories": {
