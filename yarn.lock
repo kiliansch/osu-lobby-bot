@@ -615,6 +615,11 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.31.tgz#72286bd33d137aa0d152d47ec7c1762563d34055"
   integrity sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==
 
+"@types/node@^12.12.11":
+  version "12.20.7"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.20.7.tgz#1cb61fd0c85cb87e728c43107b5fd82b69bc9ef8"
+  integrity sha512-gWL8VUkg8VRaCAUgG9WmhefMqHmMblxe2rVpMF86nZY/+ZysU+BkAp+3cz03AixWDSSz0ks5WX59yAhv/cDwFA==
+
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.0.tgz#e486d0d97396d79beedd0a6e33f4534ff6b4973e"
@@ -3856,11 +3861,12 @@ osenv@^0.1.0:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
 
-"osu-sr-calculator@https://gitlab.com/kilian1/star-rating-calculator":
-  version "1.0.14"
-  resolved "https://gitlab.com/kilian1/star-rating-calculator#5101c9146e7ca8fde3c6e2930bc3f5ac064c41f0"
+osu-sr-calculator@^1.0.13:
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/osu-sr-calculator/-/osu-sr-calculator-1.0.13.tgz#1ff1bcf882e5420d9299376bb067a83abf84bef6"
+  integrity sha512-CV8W5w1uFtP5kh8p6Uw2bs4esMi9b2iyIuxB+h+nEuopmhMp55l5VEf8H2MSz2izEoWWPwXW5+AHtOBOMWsaLQ==
   dependencies:
-    "@types/node" "*"
+    "@types/node" "^12.12.11"
     distributions "^2.1.0"
     math-erf "^1.0.0"
     mathfn "^1.1.0"

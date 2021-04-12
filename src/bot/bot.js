@@ -82,7 +82,7 @@ class Bot extends EventEmitter {
 
       logger.info(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
     } catch (error) {
-      this.emit('error');
+      this.emit('error', error);
       logger.info('FIRED ERROR EVENT');
       this.connectionStatus = ConnectionStatus.ERROR;
       logger.error('Error starting bot', error);

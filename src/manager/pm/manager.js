@@ -67,7 +67,7 @@ class Manager {
   evaluateQuestionnaire(questionnaire) {
     // Remove questionnaire from running questionnaires array
     // eslint-disable-next-line
-        this.runningQuestionnaires = this.runningQuestionnaires.filter(
+    this.runningQuestionnaires = this.runningQuestionnaires.filter(
       (running) => questionnaire.message.user.username !== running.name
     );
 
@@ -113,6 +113,18 @@ class Manager {
 
         bot.channel.lobby.on('playerJoined', addCreatorAsRefEvent);
       };
+
+      bot.on('started', () => {
+        bot.channel.on('PART', (member) => {
+          // The lobby has been disbanded
+          if (member.user.isClient()) {
+            bot.stop();
+            this.runningGames = this.runningGames.filter(
+              (o) => o.username === member.user.ircUsername
+            );
+          }
+        });
+      });
 
       bot.start();
 
