@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "dependencies": {
-    "bancho.js": "^0.9.7",
+    "bancho.js": "^0.10.0-rc.4",
     "chalk": "^4.1.0",
     "dotenv": "^8.2.0",
     "figlet": "^1.5.0",
@@ -22,7 +22,8 @@
   },
   "scripts": {
     "test": "jest",
-    "lint": "eslint --fix src/"
+    "lint": "eslint --fix src/",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",

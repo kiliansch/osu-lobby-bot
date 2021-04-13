@@ -950,10 +950,10 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
 
-bancho.js@^0.9.7:
-  version "0.9.7"
-  resolved "https://registry.yarnpkg.com/bancho.js/-/bancho.js-0.9.7.tgz#0fc87c897aced6da3aa71bf41221d2173ed5d287"
-  integrity sha512-0W08wnmzWWg+Pyqi2RSrPFrrYJcj8zZNRnrTSUZunxnQOXRQavx9bdZXEe6uF4l3WShzoo8aeYjrZrgZnvdcHg==
+bancho.js@^0.10.0-rc.4:
+  version "0.10.0-rc.4"
+  resolved "https://registry.yarnpkg.com/bancho.js/-/bancho.js-0.10.0-rc.4.tgz#10b4a3299011a4a78000798311e7e4bd9012e8a2"
+  integrity sha512-UcM2cMnq5JjYNvpELk2zQlsOMf0zafqbXoR1/G3UbNDBkXJNzjuG9yS43Qj9IFXoZpoYqlc7xlC8MfeRyUulvA==
   dependencies:
     nodesu "^0.7.2"
 
