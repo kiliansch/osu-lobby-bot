@@ -25,7 +25,7 @@ class Bot extends EventEmitter {
       minStars: 0,
       maxStars: 0,
     };
-    Object.assign(options, defaultOptions);
+    options = Object.assign(defaultOptions, options);
 
     /**
      * @type {BanchoClient}
@@ -36,6 +36,8 @@ class Bot extends EventEmitter {
     this.teamMode = options.teamMode;
     this.size = options.size;
     this.mods = options.mods;
+    this.minStars = options.minStars;
+    this.maxStars = options.maxStars;
 
     this.channel = null;
     this.playerQueue = null;
