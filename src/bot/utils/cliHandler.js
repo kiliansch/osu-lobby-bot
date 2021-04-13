@@ -21,10 +21,10 @@ class CliHandler {
    * Intro message
    */
   static intro() {
-    logger.info(
+    console.log(
       chalk.green(
         figlet.textSync('osu! lobby bot', {
-          font: 'standard',
+          font: 'Standard',
         })
       )
     );
@@ -34,7 +34,7 @@ class CliHandler {
    * @returns {object} - Keys and values of requested user input
    */
   // eslint-disable-next-line
-    async getUserInput() {
+  async getUserInput() {
     const questions = [];
 
     // LOBBY NAME
