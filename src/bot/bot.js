@@ -57,7 +57,6 @@ class Bot extends EventEmitter {
   async start() {
     try {
       this.emit('starting');
-      logger.info('FIRED STARTING EVENT');
       this.connectionStatus = ConnectionStatus.CONNECTING;
       if (!this.client.isConnected()) {
         await this.client.connect();
@@ -76,7 +75,6 @@ class Bot extends EventEmitter {
       await this.channel.lobby.setPassword('');
       this.connectionStatus = ConnectionStatus.CONNECTED;
       this.emit('started');
-      logger.info('FIRED STARTED EVENT');
 
       this.setupLobbyListeners();
       this.setupClientListeners();
@@ -85,18 +83,19 @@ class Bot extends EventEmitter {
       logger.info(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
     } catch (error) {
       this.emit('error', error);
-      logger.info('FIRED ERROR EVENT');
       this.connectionStatus = ConnectionStatus.ERROR;
       logger.error('Error starting bot', error);
-      process.exit(1);
     }
   }
 
   async stop() {
     if (this.channel.joined) {
+      logger.info('Closing lobby...');
       await this.channel.lobby.closeLobby();
+      logger.info('...Closed lobby');
     }
 
+    logger.info('Disconnecting... Goodbye!');
     this.client.disconnect();
 
     this.connectionStatus = ConnectionStatus.DISCONNECTED;
@@ -112,22 +111,16 @@ class Bot extends EventEmitter {
 
     this.channel.lobby.on('playerJoined', (obj) => {
       this.playerQueue.add(obj.player.user.username, obj.player);
-      this.emit('playerQueue', this.playerQueue.queue.length);
-      logger.info('FIRED PLAYERQUEUE JOINED EVENT');
     });
 
     this.channel.lobby.on('playerLeft', (obj) => {
       this.playerQueue.remove(obj.user.username);
-      this.emit('playerQueue', this.playerQueue.queue.length);
-      logger.info('FIRED PLAYERQUEUE LEFT EVENT');
     });
 
     this.channel.lobby.on('matchFinished', () => {
       this.emit('matchFinished');
       this.playerQueue.moveCurrentHostToEnd();
       this.playerQueue.next();
-      this.emit('host', this.playerQueue.currentHost);
-      logger.info('FIRED HOST UPDATE EVENT');
     });
 
     this.channel.lobby.on('matchStarted', async () => {
@@ -156,7 +149,7 @@ class Bot extends EventEmitter {
     });
 
     process.on('SIGINT', () => {
-      logger.info('SIGINT received. Closing lobby and exiting...');
+      logger.info('SIGINT received.');
       this.stop();
       process.exit(0);
     });
