@@ -20,31 +20,35 @@ class RestrictedBeatmapListener {
     if (this.beatmap == null || !this.beatmapDifficultyRestricted()) {
       return;
     }
-
     await this.checkForDoubleTime();
+
+    const channelUser = this.bot.channel.channelMembers.get(this.bot.playerQueue.currentHost);
+    const beatmapURL = `[https://osu.ppy.sh/b/${this.beatmap.id} ${this.beatmap.title} - ${this.beatmap.title} [${this.beatmap.version}]]`;
+    const userURL = `(${channelUser.user.username})[https://osu.ppy.sh/u/${channelUser.user.id}]`;
 
     const tooLow = await this.beatmapTooLow();
     if (tooLow === true && !this.bot.allowBeatmap) {
       // Beatmap too high.
-      let message = `${this.bot.playerQueue.currentHost} this beatmap is too low, minimum stars are ${this.bot.minStars}. `;
-      if (!this.matchStarted) {
-        message +=
-          'If you start with these settings, match will be aborted and host will be passed to the next in line.';
-      }
 
-      this.bot.channel.sendMessage(message);
+      channelUser.user.sendMessage(
+        `${userURL}! Your choice, ${beatmapURL} is too low, minimum stars are ${this.bot.minStars}.`
+      );
+      if (!this.matchStarted)
+        channelUser.user.sendMessage(
+          'If you start with these settings, match will be aborted and host will be passed to the next in line.'
+        );
     }
 
     const tooHigh = await this.beatmapTooHigh();
     if (tooHigh === true && !this.bot.allowBeatmap) {
       // Beatmap too high.
-      let message = `${this.bot.playerQueue.currentHost} this beatmap is too high, maximum stars are ${this.bot.maxStars}. `;
-      if (!this.matchStarted) {
-        message +=
-          'If you start with these settings, match will be aborted and host will be passed to the next in line.';
-      }
-
-      this.bot.channel.sendMessage(message);
+      channelUser.user.sendMessage(
+        `${userURL}! Your choice, ${beatmapURL} is too high, maximum stars are ${this.bot.maxStars}.`
+      );
+      if (!this.matchStarted)
+        channelUser.user.sendMessage(
+          'If you start with these settings, match will be aborted and host will be passed to the next in line.'
+        );
     }
 
     if ((tooLow || tooHigh) && this.matchStarted) {
@@ -53,7 +57,7 @@ class RestrictedBeatmapListener {
         return;
       }
 
-      this.bot.channel.sendMessage(`${this.bot.playerQueue.currentHost} you have been warned.`);
+      channelUser.user.sendMessage(`You have been warned.`);
       this.bot.channel.lobby.abortMatch();
       this.bot.playerQueue.next();
     }
