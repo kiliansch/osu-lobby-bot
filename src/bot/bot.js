@@ -4,6 +4,7 @@ const Help = require('./utils/help');
 const listeners = require('./listeners');
 const logger = require('../logging/logger');
 const PlayerQueue = require('./utils/playerQueue');
+const ChannelCommands = require('./utils/channelCommands');
 
 /**
  * Bot class
@@ -77,10 +78,13 @@ class Bot extends EventEmitter {
       this.emit('started');
 
       this.setupLobbyListeners();
-      this.setupClientListeners();
+      this.setupChannelListeners();
       this.playerQueue = new PlayerQueue(this);
 
-      logger.info(`Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`);
+      logger.info(
+        `Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`
+      );
+      this.client.getSelf().sendMessage(this.getGameInviteLink());
     } catch (error) {
       this.emit('error', error);
       this.connectionStatus = ConnectionStatus.ERROR;
@@ -159,44 +163,54 @@ class Bot extends EventEmitter {
     }
   }
 
-  setupClientListeners() {
+  /**
+   *
+   * @param {BanchoMessage} message
+   * @returns {Boolean}
+   */
+  isMessageFromOp(message) {
+    return message.user.isClient() || this.refs.includes(message.user.username);
+  }
+
+  setupChannelListeners() {
     // Admin / Operator commands
-    this.client.on('CM', (message) => {
-      if (!message.user.isClient() || !this.refs.includes(message.user.username)) {
-        return;
-      }
+    this.channel.on('message', (message) => {
+      if (!this.isMessageFromOp(message)) return;
 
       // Skip to given user name
-      let r = /^(!skipTo) (.+)$/i;
-      if (r.test(message.message)) {
-        const m = r.exec(message.message);
-        this.playerQueue.skipTo(m[2]);
-      }
-
-      r = /^!allow$/i;
-      if (r.test(message.message)) {
-        this.allowBeatmap = true;
-        this.channel.sendMessage('Beatmap restriction overriden for the next map by match owner.');
-      }
-    });
-
-    this.client.on('CM', (message) => {
-      let r = /^!skipMe$/i;
-      if (r.test(message.message)) {
-        this.playerQueue.skipTurn(message.user.username);
-      }
-
-      r = /^!botHelp$/i;
-      if (r.test(message.message)) {
-        let admin = false;
-        if (message.user.isClient() || this.refs.includes(message.user.username)) {
-          admin = true;
+      ChannelCommands.addCommand(
+        /^(!skipTo) (.+)$/i,
+        message.message,
+        (matches) => {
+          this.playerQueue.skipTo(message, matches[2]);
         }
+      );
 
-        const helpLines = Help.getCommands(admin);
-        Object.keys(helpLines).forEach((key) => message.user.sendMessage(helpLines[key]));
-      }
+      ChannelCommands.addCommand('!allow', message.message, () => {
+        this.allowBeatmap = true;
+        this.channel.sendMessage(
+          'Beatmap restriction overriden for the next map by match owner.'
+        );
+      });
     });
+
+    this.channel.on('message', (message) => {
+      ChannelCommands.addCommand('!skipMe', message.message, () => {
+        this.playerQueue.skipTurn(message.user.username);
+      });
+
+      ChannelCommands.addCommand('!botHelp', message.message, () => {
+        const helpLines = Help.getCommands(this.isMessageFromOp(message));
+        Object.keys(helpLines).forEach((key) =>
+          message.user.sendMessage(helpLines[key])
+        );
+      });
+    });
+  }
+
+  getGameInviteLink() {
+    const gameId = Number(this.channel.topic.split('#')[1]);
+    return `Join your game here: [osump://${gameId}/ ${this.lobbyName}]`;
   }
 }
 
