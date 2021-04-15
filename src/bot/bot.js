@@ -25,6 +25,8 @@ class Bot extends EventEmitter {
     const defaultOptions = {
       minStars: 0,
       maxStars: 0,
+      winCondition: 0,
+      password: '',
     };
     options = Object.assign(defaultOptions, options);
 
@@ -39,6 +41,8 @@ class Bot extends EventEmitter {
     this.mods = options.mods;
     this.minStars = options.minStars;
     this.maxStars = options.maxStars;
+    this.password = options.password;
+    this.winCondition = options.winCondition;
 
     this.channel = null;
     this.playerQueue = null;
@@ -71,9 +75,16 @@ class Bot extends EventEmitter {
        */
       this.channel = await this.client.createLobby(this.lobbyName);
       logger.info('Created lobby.', { lobby: this.channel.lobby });
-      await this.channel.lobby.setSettings(this.teamMode, 0, this.size);
-      await this.channel.lobby.setMods(this.mods, this.mods.indexOf('Freemod') > -1);
-      await this.channel.lobby.setPassword('');
+      await this.channel.lobby.setSettings(
+        this.teamMode,
+        this.winCondition,
+        this.size
+      );
+      await this.channel.lobby.setMods(
+        this.mods,
+        this.mods.indexOf('Freemod') > -1
+      );
+      await this.channel.lobby.setPassword(this.password);
       this.connectionStatus = ConnectionStatus.CONNECTED;
       this.emit('started');
 
