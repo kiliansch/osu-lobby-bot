@@ -57,6 +57,10 @@ class PlayerQueue {
     this.rotationChange = false;
   }
 
+  /**
+   *
+   * @param {string} playerName
+   */
   skipTurn(playerName) {
     const playerObj = this.queue.find((o) => o.name === playerName);
 
@@ -71,6 +75,11 @@ class PlayerQueue {
     }
   }
 
+  /**
+   *
+   * @param {string} playerName
+   * @param {BanchoLobbyPlayer} lobbyPlayer
+   */
   add(playerName, lobbyPlayer) {
     this.queue.push({
       name: playerName,
@@ -84,6 +93,10 @@ class PlayerQueue {
     }
   }
 
+  /**
+   *
+   * @param {string} playerName
+   */
   remove(playerName) {
     this.queue = this.queue.filter((playerObj) => playerObj.name !== playerName);
   }
