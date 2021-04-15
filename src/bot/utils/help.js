@@ -18,7 +18,8 @@ class Help {
     });
     this.commands.push({
       command: '!skipMe',
-      description: 'Will skip your next turn and put you back to the end of the host queue.',
+      description:
+        'Will skip your next turn and put you back to the end of the host queue.',
     });
     this.inactiveCommands.push({
       command: '!new',
@@ -43,7 +44,9 @@ class Help {
     output.push('Basic commands:');
     output.push('===============');
     Object.keys(this.commands).forEach((key) => {
-      output.push(`${this.commands[key].command}: ${this.commands[key].description}`);
+      output.push(
+        `${this.commands[key].command}: ${this.commands[key].description}`
+      );
     });
 
     if (admin) {
@@ -51,7 +54,9 @@ class Help {
       output.push('Admin commands:');
       output.push('===============');
       Object.keys(this.adminCommands).forEach((key) => {
-        output.push(`${this.adminCommands[key].command}: ${this.adminCommands[key].description}`);
+        output.push(
+          `${this.adminCommands[key].command}: ${this.adminCommands[key].description}`
+        );
       });
     }
 

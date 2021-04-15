@@ -127,7 +127,9 @@ class Questionnaire {
 
           if (typeof current.message === 'function') {
             const messages = current.message();
-            Object.keys(messages).forEach((key) => this.message.user.sendMessage(messages[key]));
+            Object.keys(messages).forEach((key) =>
+              this.message.user.sendMessage(messages[key])
+            );
           }
 
           throw BreakException;
@@ -145,9 +147,14 @@ class Questionnaire {
    * @param {string} message
    */
   handleInput(message) {
-    if (!Object.prototype.hasOwnProperty.call(this.currentQuestion, 'answered')) {
+    if (
+      !Object.prototype.hasOwnProperty.call(this.currentQuestion, 'answered')
+    ) {
       if (
-        Object.prototype.hasOwnProperty.call(this.currentQuestion, 'validate') &&
+        Object.prototype.hasOwnProperty.call(
+          this.currentQuestion,
+          'validate'
+        ) &&
         this.currentQuestion.validate(message) !== true
       ) {
         this.message.user.sendMessage(this.currentQuestion.validate(message));

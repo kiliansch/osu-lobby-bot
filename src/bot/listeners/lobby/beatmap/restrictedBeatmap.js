@@ -22,8 +22,10 @@ class RestrictedBeatmapListener {
     }
     await this.checkForDoubleTime();
 
-    const channelUser = this.bot.channel.channelMembers.get(this.bot.playerQueue.currentHost);
-    const beatmapURL = `[https://osu.ppy.sh/b/${this.beatmap.id} ${this.beatmap.title} - ${this.beatmap.title} [${this.beatmap.version}]]`;
+    const channelUser = this.bot.channel.channelMembers.get(
+      this.bot.playerQueue.currentHost
+    );
+    const beatmapURL = `[https://osu.ppy.sh/b/${this.beatmap.id} ${this.beatmap.artist} - ${this.beatmap.title} [${this.beatmap.version}]]`;
     const userURL = `(${channelUser.user.username})[https://osu.ppy.sh/u/${channelUser.user.id}]`;
 
     const tooLow = await this.beatmapTooLow();
@@ -81,7 +83,8 @@ class RestrictedBeatmapListener {
             if (result !== undefined) {
               if (
                 this.bot.channel.lobby.mods !== null &&
-                this.bot.channel.lobby.mods.find((o) => o.shortMod === 'dt') !== undefined
+                this.bot.channel.lobby.mods.find((o) => o.shortMod === 'dt') !==
+                  undefined
               ) {
                 this.hasDT = true;
               }
@@ -112,7 +115,9 @@ class RestrictedBeatmapListener {
 
     if (this.hasDT) {
       try {
-        const result = await starRating.calculateStarRating(this.beatmap.id, ['DT']);
+        const result = await starRating.calculateStarRating(this.beatmap.id, [
+          'DT',
+        ]);
         difficulty = result.DT;
       } catch (error) {
         logger.error(error);
@@ -131,7 +136,9 @@ class RestrictedBeatmapListener {
 
     if (this.hasDT) {
       try {
-        const result = await starRating.calculateStarRating(this.beatmap.id, ['DT']);
+        const result = await starRating.calculateStarRating(this.beatmap.id, [
+          'DT',
+        ]);
         difficulty = result.DT;
       } catch (error) {
         logger.error(error);

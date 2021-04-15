@@ -81,7 +81,20 @@ class CliHandler {
       type: 'checkbox',
       message:
         'Please select mods, if none are selected or Freemod is enabled all other options will be ignored',
-      choices: ['Freemod', 'EZ', 'NF', 'HT', 'HR', 'SD', 'DT', 'HD', 'FL', 'RL', 'AP', 'SO'],
+      choices: [
+        'Freemod',
+        'EZ',
+        'NF',
+        'HT',
+        'HR',
+        'SD',
+        'DT',
+        'HD',
+        'FL',
+        'RL',
+        'AP',
+        'SO',
+      ],
       filter: (input) => {
         if (input.length === 0 || input.indexOf('Freemod') > -1) {
           return ['Freemod'];

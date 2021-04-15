@@ -30,16 +30,15 @@ class PlayerQueue {
     message.user.sendMessage(`Skipping host to ${playerName}`);
 
     let upcomingHost;
-    const iterator = 0;
     let hostFound = false;
 
-    while (iterator <= this.queue.length) {
+    while (true) {
       upcomingHost = this.queue.shift();
       if (upcomingHost.name === playerName) {
         this.rotationChange = true;
         this.bot.channel.lobby.setHost(playerName);
         this.currentHost = playerName;
-
+        this.announcePlayers();
         this.queue.push(upcomingHost);
         hostFound = true;
         break;
@@ -67,11 +66,14 @@ class PlayerQueue {
     if (this.currentHost === playerName) {
       this.next();
     } else {
-      this.queue = this.queue.filter((playerElement) => playerElement.name !== playerName);
+      this.queue = this.queue.filter(
+        (playerElement) => playerElement.name !== playerName
+      );
       this.queue.push(playerObj);
 
-      this.bot.channel.sendMessage(`Skipping ${playerName}.`);
-      this.announcePlayers();
+      const user = this.bot.channel.channelMembers.get(playerName).user;
+      user.sendMessage(`Skipped your turn`);
+      user.sendMessage(`Upcoming hosts: ${this.getQueueNames()}`);
     }
   }
 
@@ -98,7 +100,9 @@ class PlayerQueue {
    * @param {string} playerName
    */
   remove(playerName) {
-    this.queue = this.queue.filter((playerObj) => playerObj.name !== playerName);
+    this.queue = this.queue.filter(
+      (playerObj) => playerObj.name !== playerName
+    );
   }
 
   /**
@@ -113,10 +117,6 @@ class PlayerQueue {
 
     const stats = await nextPlayer.lobbyPlayer.user.stats();
     if (stats.status === 'Afk') {
-      this.bot.channel.sendMessage(
-        `Upcoming host named ${nextPlayer.name}s status is ${stats.status}. Skipping.`
-      );
-
       this.queue.push(nextPlayer);
       this.next(additionalMessage);
     } else {
@@ -127,8 +127,6 @@ class PlayerQueue {
       this.bot.channel.sendMessage(`!mp host ${nextPlayer.name}`);
       this.bot.channel.sendMessage(more);
       this.bot.emit('host', nextPlayer.name);
-
-      this.announcePlayers();
       this.queue.push(nextPlayer);
 
       this.rotationChange = false;
@@ -181,15 +179,27 @@ class PlayerQueue {
 
     if (this.currentHost) {
       // Add host to end
-      this.add(this.currentHost, this.bot.channel.lobby.players[this.currentHost]);
+      this.add(
+        this.currentHost,
+        this.bot.channel.lobby.players[this.currentHost]
+      );
     }
 
-    logger.info(`Initialized ${this.queue.length} players with ${this.currentHost} as Host.`);
-    return this.announcePlayers();
+    logger.info(
+      `Initialized ${this.queue.length} players with ${this.currentHost} as Host.`
+    );
+
+    if (this.queue.length > 0) {
+      this.announcePlayers();
+    }
+  }
+
+  getAnnouncePlayerString() {
+    return `Upcoming hosts: ${this.getQueueNames()} | type !botHelp for available commands`;
   }
 
   announcePlayers() {
-    this.bot.channel.sendMessage(`Upcoming hosts: ${this.getQueueNames()}`);
+    this.bot.channel.sendMessage(this.getAnnouncePlayerString());
   }
 }
 

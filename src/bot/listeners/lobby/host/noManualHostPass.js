@@ -18,7 +18,8 @@ class NoManualHostPassListener {
       Boolean(this.currentHost) &&
       this.bot.playerQueue.currentHost !== this.currentHost.user.username &&
       (!this.bot.rotationChange ||
-        this.currentHost.user.username !== correctNextHost.lobbyPlayer.user.username)
+        this.currentHost.user.username !==
+          correctNextHost.lobbyPlayer.user.username)
     ) {
       // don't run this on the upcoming host change
       this.bot.rotationChange = true;
@@ -28,7 +29,9 @@ class NoManualHostPassListener {
       this.bot.channel.sendMessage(
         `${this.bot.playerQueue.currentHost}, you passed host over to ${this.currentHost.user.username}, but it's not their turn yet.`
       );
-      this.bot.channel.sendMessage('If you want to pass on your turn, type !skip in chat.');
+      this.bot.channel.sendMessage(
+        'If you want to pass on your turn, type !skip in chat.'
+      );
     }
   }
 
