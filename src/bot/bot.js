@@ -131,9 +131,13 @@ class Bot extends EventEmitter {
       this.emit('matchStarted');
       listeners.lobby.matchStarted.forEach((MatchStartedListener) => {
         if (MatchStartedListener.name === 'RestrictedBeatmapListener') {
-          new MatchStartedListener(this.channel.lobby.beatmap, this, true).listener();
+          new MatchStartedListener(
+            this.channel.lobby.beatmap,
+            this,
+            true
+          ).listener();
         } else {
-          new MatchStartedListener().listener();
+          new MatchStartedListener(this).listener();
         }
       });
     });
@@ -149,7 +153,9 @@ class Bot extends EventEmitter {
     });
 
     this.channel.lobby.on('refereeRemoved', (playerName) => {
-      this.refs = this.refs.filter((refArrayItem) => refArrayItem !== playerName);
+      this.refs = this.refs.filter(
+        (refArrayItem) => refArrayItem !== playerName
+      );
     });
 
     process.on('SIGINT', () => {
