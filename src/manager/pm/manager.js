@@ -22,8 +22,14 @@ class Manager {
     logger.info('connected');
 
     this.client.on('PM', (message) => {
-      if (message.user.ircUsername === 'BanchoBot' || message.self || message.user.isClient()) {
-        logger.info(`Blocked private message => ${message.user.ircUsername}: ${message.message}`);
+      if (
+        message.user.ircUsername === 'BanchoBot' ||
+        message.self ||
+        message.user.isClient()
+      ) {
+        logger.info(
+          `Blocked private message => ${message.user.ircUsername}: ${message.message}`
+        );
         return;
       }
 
@@ -37,7 +43,9 @@ class Manager {
    * @returns
    */
   async handleQuestionnaire(message) {
-    const running = this.runningQuestionnaires.find((o) => o.name === message.user.username);
+    const running = this.runningQuestionnaires.find(
+      (o) => o.name === message.user.username
+    );
     if (running) {
       running.questionnaire.handleInput(message.message);
       return;
@@ -107,7 +115,10 @@ class Manager {
 
           if (playerObj.player.user.username === username) {
             bot.channel.lobby.addRef(playerObj.player.user.username);
-            bot.channel.lobby.removeListener('playerJoined', addCreatorAsRefEvent);
+            bot.channel.lobby.removeListener(
+              'playerJoined',
+              addCreatorAsRefEvent
+            );
           }
         };
 
