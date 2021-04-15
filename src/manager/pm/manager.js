@@ -152,10 +152,7 @@ class Manager {
           Object.prototype.hasOwnProperty.call(bot, 'joined') &&
           bot.channel.joined
         ) {
-          const gameId = Number(bot.channel.topic.split('#')[1]);
-          questionnaire.message.user.sendMessage(
-            `Join your game here: [osump://${gameId}/ ${bot.lobbyName}]`
-          );
+          questionnaire.message.user.sendMessage(bot.getGameInviteLink());
 
           clearInterval(inviteLinkInterval);
         }
