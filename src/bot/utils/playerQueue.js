@@ -1,3 +1,4 @@
+const { BanchoMessage, BanchoLobbyPlayer } = require('bancho.js');
 const logger = require('../../logging/logger');
 
 class PlayerQueue {
@@ -14,16 +15,19 @@ class PlayerQueue {
   /**
    * Skip queue to given player name. All players that have been skipped are being appended.
    *
+   * @param {BanchoMessage} message
    * @param {string} playerName
    */
-  skipTo(playerName) {
+  skipTo(message, playerName) {
     const playerObj = this.queue.find((o) => o.name === playerName);
 
     if (!playerObj) {
-      this.bot.channel.sendMessage(`Can't find a player named: ${playerName} :(`);
+      return message.user.sendMessage(
+        `Can't find a player named: ${playerName} :(`
+      );
     }
 
-    this.bot.channel.sendMessage(`Skipping host to ${playerName}`);
+    message.user.sendMessage(`Skipping host to ${playerName}`);
 
     let upcomingHost;
     const iterator = 0;
@@ -45,10 +49,9 @@ class PlayerQueue {
     }
 
     if (!hostFound) {
-      this.bot.channel.sendMessage('Skipping has failed.');
+      message.user.sendMessage('Skipping has failed.');
     } else {
-      this.bot.channel.sendMessage(`Skipped hosts up to ${playerName}`);
-      this.announcePlayers();
+      message.user.sendMessage(`Skipped hosts up to ${playerName}`);
     }
 
     this.rotationChange = false;
@@ -87,8 +90,9 @@ class PlayerQueue {
 
   /**
    * Set next host and add it again at the end of the queue.
+   * @param {string} additionalMessage
    */
-  async next() {
+  async next(additionalMessage = '') {
     this.rotationChange = true;
     const nextPlayer = this.queue.shift();
     this.currentHost = nextPlayer.name;
@@ -101,9 +105,14 @@ class PlayerQueue {
       );
 
       this.queue.push(nextPlayer);
-      this.next();
+      this.next(additionalMessage);
     } else {
-      this.bot.channel.lobby.setHost(nextPlayer.name);
+      let more = `${this.getAnnouncePlayerString()}`;
+      if (additionalMessage.length > 0) {
+        more = ` | ${additionalMessage}${more}`;
+      }
+      this.bot.channel.sendMessage(`!mp host ${nextPlayer.name}`);
+      this.bot.channel.sendMessage(more);
       this.bot.emit('host', nextPlayer.name);
 
       this.announcePlayers();
