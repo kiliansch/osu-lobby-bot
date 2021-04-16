@@ -90,8 +90,10 @@ class RestrictedBeatmapListener extends Listener {
               this.hasDT = true;
             }
 
-            resolve();
-            this.bot.client.removeListener('CM', modsMessageListener);
+            if (result !== undefined) {
+              resolve();
+              this.bot.client.removeListener('CM', modsMessageListener);
+            }
           };
 
           this.bot.client.on('CM', modsMessageListener);
