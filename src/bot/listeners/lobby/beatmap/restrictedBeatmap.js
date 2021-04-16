@@ -1,6 +1,6 @@
 const BanchoLobbyRegexes = require('bancho.js/lib/Multiplayer/BanchoLobbyRegexes')
   .regexes;
-const starRating = require('osu-sr-calculator'); // eslint-disable-line
+const starRating = require('@pwn_z0r/osu-sr-calculator'); // eslint-disable-line
 const logger = require('../../../../logging/logger');
 const Listener = require('../../listener');
 
