@@ -169,7 +169,7 @@ class Questionnaire {
     }
   }
 
-  static formatAnswer(type, value) {
+  formatAnswer(type, value) {
     switch (type) {
       case 'number':
       case 'integer':
