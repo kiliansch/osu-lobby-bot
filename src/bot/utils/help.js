@@ -13,13 +13,13 @@ class Help {
 
   setupCommands() {
     this.commands.push({
-      command: '!botHelp',
-      description: 'Will display these commands inside a private message.',
-    });
-    this.commands.push({
       command: '!skipMe',
       description:
         'Will skip your next turn and put you back to the end of the host queue.',
+    });
+    this.commands.push({
+      command: '!timeLeft',
+      description: 'Will display the time left until next round starts.',
     });
     this.inactiveCommands.push({
       command: '!new',
@@ -42,7 +42,6 @@ class Help {
   getCommands(admin = false) {
     const output = [];
     output.push('Basic commands:');
-    output.push('===============');
     Object.keys(this.commands).forEach((key) => {
       output.push(
         `${this.commands[key].command}: ${this.commands[key].description}`
@@ -52,7 +51,6 @@ class Help {
     if (admin) {
       output.push('-');
       output.push('Admin commands:');
-      output.push('===============');
       Object.keys(this.adminCommands).forEach((key) => {
         output.push(
           `${this.adminCommands[key].command}: ${this.adminCommands[key].description}`

@@ -5,6 +5,7 @@ const listeners = require('./listeners');
 const logger = require('../logging/logger');
 const PlayerQueue = require('./utils/playerQueue');
 const ChannelCommands = require('./utils/channelCommands');
+const Bancho = require('bancho.js');
 
 /**
  * Bot class
@@ -12,21 +13,26 @@ const ChannelCommands = require('./utils/channelCommands');
 class Bot extends EventEmitter {
   /**
    *
-   * @param {BanchoClient} Client
-   * @param {string} lobbyName
-   * @param {number} teamMode
-   * @param {number} size
-   * @param {Array} mods
-   * @param {number} minStars
-   * @param {number} maxStars
+   * @param {Bancho.BanchoClient} Client
+   * @param {object} options
    */
   constructor(Client, options = {}) {
     super();
+    /**
+     * @prop {Array} mods
+     * @prop {string} lobbyName
+     * @prop {number} minStars
+     * @prop {number} maxStars
+     * @prop {number} winCondition
+     * @prop {string} password
+     * @prop {Bancho.BanchoUser} creator
+     */
     const defaultOptions = {
       minStars: 0,
       maxStars: 0,
       winCondition: 0,
       password: '',
+      creator: Client.getSelf(),
     };
     options = Object.assign(defaultOptions, options);
 
@@ -44,6 +50,8 @@ class Bot extends EventEmitter {
     this.password = options.password;
     this.winCondition = options.winCondition;
 
+    this.creator = options.creator;
+
     this.channel = null;
     this.playerQueue = null;
     this.gameId = null;
@@ -51,7 +59,10 @@ class Bot extends EventEmitter {
 
     this.allowBeatmap = false;
     this.fixedHost = false;
-    this.refs = [];
+    this.refs = new Set();
+
+    this.afkTimer = null;
+    this.matchTimer = null;
 
     this.connectionStatus = ConnectionStatus.DISCONNECTED;
   }
@@ -95,11 +106,12 @@ class Bot extends EventEmitter {
       logger.info(
         `Multiplayer Link: https://osu.ppy.sh/mp/${this.channel.lobby.id}`
       );
-      this.client.getSelf().sendMessage(this.getGameInviteLink());
+      this.creator.sendMessage(this.getGameInviteLink());
     } catch (error) {
       this.emit('error', error);
-      this.connectionStatus = ConnectionStatus.ERROR;
       logger.error('Error starting bot', error);
+
+      this.stop();
     }
   }
 
@@ -117,36 +129,40 @@ class Bot extends EventEmitter {
   }
 
   setupLobbyListeners() {
-    // Beatmap
-    this.channel.lobby.on('beatmap', async (beatmap) => {
+    // Beatmap listner for example star restriction
+    this.channel.lobby.on('beatmap', (beatmap) => {
       listeners.lobby.beatmap.forEach((BeatmapListener) => {
         new BeatmapListener(beatmap, this).listener();
       });
     });
 
+    // Add new player to queue on join
     this.channel.lobby.on('playerJoined', (obj) => {
-      this.playerQueue.add(obj.player.user.username, obj.player);
+      listeners.lobby.playerJoined.forEach((PlayerJoinedListener) => {
+        new PlayerJoinedListener(obj, this).listener();
+      });
     });
 
+    // Remove player from queue on leave
     this.channel.lobby.on('playerLeft', (obj) => {
       this.playerQueue.remove(obj.user.username);
     });
 
+    // Rotate the host after the match is finished
+    // Start round timer of 120 seconds
     this.channel.lobby.on('matchFinished', () => {
       this.emit('matchFinished');
-      this.playerQueue.moveCurrentHostToEnd();
-      this.playerQueue.next();
+      listeners.lobby.matchFinished.forEach((MatchFinishedListener) => {
+        new MatchFinishedListener(this).listener();
+      });
     });
 
-    this.channel.lobby.on('matchStarted', async () => {
+    this.channel.lobby.on('matchStarted', () => {
       this.emit('matchStarted');
       listeners.lobby.matchStarted.forEach((MatchStartedListener) => {
         if (MatchStartedListener.name === 'RestrictedBeatmapListener') {
-          new MatchStartedListener(
-            this.channel.lobby.beatmap,
-            this,
-            true
-          ).listener();
+          const beatmap = this.channel.lobby.beatmap;
+          new MatchStartedListener(beatmap, this, true).listener();
         } else {
           new MatchStartedListener(this).listener();
         }
@@ -160,13 +176,11 @@ class Bot extends EventEmitter {
     });
 
     this.channel.lobby.on('refereeAdded', (playerName) => {
-      this.refs.push(playerName);
+      this.refs.add(playerName);
     });
 
     this.channel.lobby.on('refereeRemoved', (playerName) => {
-      this.refs = this.refs.filter(
-        (refArrayItem) => refArrayItem !== playerName
-      );
+      this.refs.delete(playerName);
     });
 
     process.on('SIGINT', () => {
@@ -180,16 +194,15 @@ class Bot extends EventEmitter {
     }
   }
 
-  /**
-   *
-   * @param {BanchoMessage} message
-   * @returns {Boolean}
-   */
-  isMessageFromOp(message) {
-    return message.user.isClient() || this.refs.includes(message.user.username);
-  }
-
   setupChannelListeners() {
+    this.channel.on('PART', (member) => {
+      // The lobby has been closed
+      if (member.user.isClient()) {
+        logger.info('Lobby has been closed.');
+        this.stop();
+      }
+    });
+
     // Admin / Operator commands
     this.channel.on('message', (message) => {
       if (!this.isMessageFromOp(message)) return;
@@ -216,6 +229,15 @@ class Bot extends EventEmitter {
         this.playerQueue.skipTurn(message.user.username);
       });
 
+      ChannelCommands.addCommand('!timeLeft', message.message, () => {
+        if (!Boolean(this.matchTimer)) {
+          return this.channel.sendMessage('Match has not started yet.');
+        }
+        this.channel.sendMessage(
+          `Time left for round to start ${this.matchTimer.time} seconds`
+        );
+      });
+
       ChannelCommands.addCommand('!botHelp', message.message, () => {
         const helpLines = Help.getCommands(this.isMessageFromOp(message));
         Object.keys(helpLines).forEach((key) =>
@@ -223,6 +245,15 @@ class Bot extends EventEmitter {
         );
       });
     });
+  }
+
+  /**
+   *
+   * @param {BanchoMessage} message
+   * @returns {Boolean}
+   */
+  isMessageFromOp(message) {
+    return message.user.isClient() || this.refs.has(message.user.username);
   }
 
   getGameInviteLink() {

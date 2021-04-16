@@ -115,22 +115,16 @@ class PlayerQueue {
     this.currentHost = nextPlayer.name;
     this.currentHostLobbyPlayer = nextPlayer.lobbyPlayer;
 
-    const stats = await nextPlayer.lobbyPlayer.user.stats();
-    if (stats.status === 'Afk') {
-      this.queue.push(nextPlayer);
-      this.next(additionalMessage);
-    } else {
-      let more = `${this.getAnnouncePlayerString()}`;
-      if (additionalMessage.length > 0) {
-        more = ` | ${additionalMessage}${more}`;
-      }
-      this.bot.channel.sendMessage(`!mp host ${nextPlayer.name}`);
-      this.bot.channel.sendMessage(more);
-      this.bot.emit('host', nextPlayer.name);
-      this.queue.push(nextPlayer);
-
-      this.rotationChange = false;
+    let more = `${this.getAnnouncePlayerString()}`;
+    if (additionalMessage.length > 0) {
+      more = `${more} | ${additionalMessage}`;
     }
+    this.bot.channel.sendMessage(`!mp host ${nextPlayer.name}`);
+    this.bot.channel.sendMessage(more);
+    this.bot.emit('host', nextPlayer.name);
+    this.queue.push(nextPlayer);
+
+    this.rotationChange = false;
 
     this.bot.emit('playerQueue', this.queue.length);
   }

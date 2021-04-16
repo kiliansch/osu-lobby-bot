@@ -1,12 +1,15 @@
-const Regexes = require('bancho.js/lib/Multiplayer/BanchoLobbyRegexes');
+const BanchoLobbyRegexes = require('bancho.js/lib/Multiplayer/BanchoLobbyRegexes')
+  .regexes;
 const starRating = require('osu-sr-calculator'); // eslint-disable-line
 const logger = require('../../../../logging/logger');
+const Listener = require('../../listener');
 
 /**
  * Restricted Beatmap listener
  */
-class RestrictedBeatmapListener {
+class RestrictedBeatmapListener extends Listener {
   constructor(beatmap, bot, matchStarted) {
+    super(bot);
     this.beatmap = beatmap;
     this.bot = bot;
     this.hasDT = false;
@@ -75,23 +78,20 @@ class RestrictedBeatmapListener {
         .sendMessage('!mp settings (check lobby mods)')
         .then(() => {
           const modsMessageListener = (message) => {
-            if (message.user.ircUsername !== 'BanchoBot') {
-              return;
+            if (message.user.ircUsername !== 'BanchoBot') return;
+
+            const result = BanchoLobbyRegexes.activeMods(message.message);
+            if (
+              result !== undefined &&
+              this.bot.channel.lobby.mods !== null &&
+              this.bot.channel.lobby.mods.find((o) => o.shortMod === 'dt') !==
+                undefined
+            ) {
+              this.hasDT = true;
             }
 
-            const result = Regexes.regexes.activeMods(message.message);
-            if (result !== undefined) {
-              if (
-                this.bot.channel.lobby.mods !== null &&
-                this.bot.channel.lobby.mods.find((o) => o.shortMod === 'dt') !==
-                  undefined
-              ) {
-                this.hasDT = true;
-              }
-
-              resolve();
-              this.bot.client.removeListener('CM', modsMessageListener);
-            }
+            resolve();
+            this.bot.client.removeListener('CM', modsMessageListener);
           };
 
           this.bot.client.on('CM', modsMessageListener);
