@@ -7,7 +7,7 @@ class ClearAfkCheckListener extends Listener {
   }
 
   listener() {
-    if (Boolean) {
+    if (Boolean(this.bot.afkTimer)) {
       this.bot.afkTimer.stop();
     }
   }
