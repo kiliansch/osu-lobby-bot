@@ -6,6 +6,7 @@ const logger = require('../logging/logger');
 const PlayerQueue = require('./utils/playerQueue');
 const ChannelCommands = require('./utils/channelCommands');
 const Bancho = require('bancho.js');
+const { Timer } = require('osu-lobby-bot');
 
 /**
  * Bot class
@@ -18,15 +19,7 @@ class Bot extends EventEmitter {
    */
   constructor(Client, options = {}) {
     super();
-    /**
-     * @prop {Array} mods
-     * @prop {string} lobbyName
-     * @prop {number} minStars
-     * @prop {number} maxStars
-     * @prop {number} winCondition
-     * @prop {string} password
-     * @prop {Bancho.BanchoUser} creator
-     */
+
     const defaultOptions = {
       minStars: 0,
       maxStars: 0,
@@ -181,6 +174,11 @@ class Bot extends EventEmitter {
 
     this.channel.lobby.on('refereeRemoved', (playerName) => {
       this.refs.delete(playerName);
+    });
+
+    this.channel.lobby.on('allPlayersReady', () => {
+      this.channel.sendMessage('Starting match in 5 seconds');
+      this.channel.lobby.startMatch(5);
     });
 
     process.on('SIGINT', () => {

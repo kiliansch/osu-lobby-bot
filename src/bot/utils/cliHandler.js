@@ -4,7 +4,6 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const { BanchoLobbyTeamModes } = require('bancho.js');
-const logger = require('../../logging/logger');
 
 /**
  *
@@ -31,7 +30,7 @@ class CliHandler {
   }
 
   /**
-   * @returns {object} - Keys and values of requested user input
+   * @returns {BotOptions} - Keys and values of requested user input
    */
   // eslint-disable-next-line
   async getUserInput() {

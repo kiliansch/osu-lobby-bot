@@ -75,14 +75,15 @@ class RestrictedBeatmapListener extends Listener {
   checkForDoubleTime() {
     return new Promise((resolve, reject) => {
       this.bot.channel
-        .sendMessage('!mp settings (check lobby mods)')
+        .sendMessage(
+          `!mp settings (check lobby mods) ${this.bot.channel.lobby.randomString()}`
+        )
         .then(() => {
           const modsMessageListener = (message) => {
             if (message.user.ircUsername !== 'BanchoBot') return;
 
             const result = BanchoLobbyRegexes.activeMods(message.message);
             if (
-              result !== undefined &&
               this.bot.channel.lobby.mods !== null &&
               this.bot.channel.lobby.mods.find((o) => o.shortMod === 'dt') !==
                 undefined
